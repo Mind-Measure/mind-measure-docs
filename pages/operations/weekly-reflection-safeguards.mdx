@@ -1,0 +1,154 @@
+# Weekly Reflection — Safeguarding Policy
+
+This document describes the safeguarding infrastructure built into the Weekly Reflection pipeline, the protocols followed before every email is sent, and the audit trail maintained for compliance purposes.
+
+> **Last reviewed:** April 2026  
+> **Prompt version at time of review:** `uni_v2.2`  
+> **Owner:** Mind Measure (data processor)
+
+---
+
+## Principles
+
+The Weekly Reflection sends AI-generated content to students who may be experiencing mental health difficulties. The following principles govern how this is handled:
+
+1. **Privacy by default.** Student data is never disclosed to universities without explicit legal basis.
+2. **Do no harm.** Content that could be distressing, triggering, or clinically inappropriate is blocked before send.
+3. **Audit everything.** Every send decision — including holds — is logged with sufficient detail to reconstruct what happened and why.
+4. **Human judgement for edge cases.** Automated systems handle clear-cut cases; ambiguous situations are flagged for Mind Measure review, not acted on automatically.
+5. **Student agency.** Students are always the first point of contact in welfare situations where it is safe to do so.
+
+---
+
+## Tiered Response Framework
+
+| Tier | Signal | Action | University notified? |
+|---|---|---|---|
+| **0** | No check-ins for 7+ days | Gentle in-app/email nudge to student | No |
+| **1** | Single check-in score < 25 OR crisis keywords | In-app message + crisis resources to student; internal Mind Measure log | No (Mind Measure monitors) |
+| **2** | Pattern: 3+ check-ins all < 40 OR week avg < 35 | Modified welfare reflection + internal flag | Mind Measure reviews — may contact university |
+| **3** | Week avg < 25 OR explicit crisis language | Reflection held; internal alert to Mind Measure; university welfare contact notified | Yes — GDPR vital interests basis (Article 6(1)(d)) |
+
+**Tier 2 university notification is not automatic.** A Mind Measure staff member reviews the flag and decides whether to contact the university welfare contact. The student is informed before any institutional disclosure wherever safe to do so.
+
+**Tier 3 notification is automatic** and documented in the DPA with each university. This is the only circumstance where data is shared without student consent.
+
+---
+
+## Pre-Send Safety Checks
+
+Every reflection passes through `runSafetyCheck()` before the email is dispatched. The function runs three sequential checks:
+
+### Check 1: Score Threshold
+
+- If `avgScore < 25`: reflection is **held** (`send_type = 'held_safety'`), not sent.
+- This corresponds to Tier 3 — the student's week-average is in the Critical zone.
+- The hold is logged; no email is sent to the student.
+
+### Check 2: Bedrock Safety Flag
+
+- The Bedrock prompt instructs Claude to return `safety_flag: true` if conversation summaries contain any reference to self-harm, suicide, crisis, or acute distress.
+- If `safety_flag === true`: reflection is **held** (`send_type = 'held_bedrock'`).
+- Bedrock is also instructed not to include crisis content in any narrative fields regardless of the flag.
+
+### Check 3: Keyword Scan
+
+A list of crisis-related terms is scanned across all generated content (narrative lead, body, close, Jodie observation) and the original conversation summaries:
+
+```
+suicid, self-harm, self harm, harm myself, kill myself,
+can't go on, cant go on, ending it, end it all,
+no reason to live, worthless, hopeless, give up on life
+```
+
+- If any keyword matches: reflection is **held** (`send_type = 'held_safety'`).
+- This catches cases where Bedrock does not set `safety_flag` but crisis language has appeared.
+
+### Welfare Week Detection
+
+- If all check-ins in the week score < 40 (minimum 3 check-ins): `isWelfareWeek = true`.
+- The reflection is still sent, but tagged as `send_type = 'welfare'`.
+- A modified welfare reflection template is used (warmer tone, university resources surfaced).
+- This corresponds to Tier 2.
+
+---
+
+## Audit Trail
+
+Every send decision is recorded in `weekly_reflection_sends`:
+
+| Column | What it records |
+|---|---|
+| `safety_check_passed` | Boolean: did all three checks pass? |
+| `safety_check_detail` | Full check-by-check result, e.g. `score_threshold:pass(avg=62),bedrock_flag:pass,keyword:pass,welfare_week:no` |
+| `bedrock_safety_flag` | Whether Bedrock independently flagged crisis content |
+| `prompt_version` | Version of the Bedrock prompt used (`uni_v2.2` etc.) |
+| `send_type` | `standard` / `welfare` / `held_safety` / `held_bedrock` / `held_review` |
+| `sent_at` | Timestamp of send decision |
+
+This trail is **Mind Measure-only**. It is never exposed to university administrators. Access is restricted to the superuser panel at `admin.mindmeasure.co.uk`.
+
+**Retention:** Safety audit records are retained for 36 months, then deleted. Content JSON (narrative text) is deleted after 12 months.
+
+---
+
+## Prompt Version Control
+
+When the Bedrock prompt changes:
+
+1. Increment `PROMPT_VERSION` in `api/reflections/weekly.ts` (e.g. `uni_v2.2` → `uni_v2.3`)
+2. Add a changelog entry to this document under [Prompt Changelog](#prompt-changelog)
+3. Document what changed and why
+4. If the change affects safety instructions, a test send must be reviewed before deploying
+
+The prompt version is logged against every send, so if a safety failure is ever investigated, we can identify exactly which prompt was in use.
+
+---
+
+## Prompt Changelog
+
+| Version | Date | Change |
+|---|---|---|
+| `uni_v2.0` | Feb 2026 | Initial production prompt |
+| `uni_v2.1` | Mar 2026 | Tone refinements: British understatement, no em-dashes, stricter word cloud rules |
+| `uni_v2.2` | Apr 2026 | Added `safety_flag` field; explicit safety guardrails section; `jodie_observation` field added |
+
+---
+
+## GDPR Basis for Processing
+
+| Processing activity | Legal basis |
+|---|---|
+| Generating personalised reflection content from check-in data | Legitimate interests (service delivery) |
+| Storing safety audit data (scores, hold reasons) | Legitimate interests (safeguarding) |
+| Disclosing to university welfare contact (Tier 3 only) | Vital interests (Article 6(1)(d)) |
+
+The Tier 3 disclosure basis is documented in the DPA with each university. Universities are informed during onboarding that this pathway exists and what thresholds trigger it.
+
+---
+
+## Escalation Path (Internal)
+
+When a reflection is held (`held_safety` or `held_bedrock`):
+
+1. Logged automatically to `weekly_reflection_sends`
+2. Visible in the Wellbeing Sends audit panel
+3. Mind Measure receives an internal alert (Sentry / email) — **not yet implemented, see roadmap**
+4. Mind Measure reviews within 24 hours
+5. If Tier 3 threshold confirmed: university welfare contact is notified via secure email with anonymised context ("a student at your institution may need support — please check in with students who haven't been seen recently")
+
+We do not disclose the student's identity to the university unless the student consents or there is an imminent risk to life.
+
+---
+
+## Limitations & Known Gaps
+
+| Gap | Status |
+|---|---|
+| Tier 0 nudge (no check-ins) — not yet implemented | Roadmap |
+| Internal alerting when holds occur — Sentry integration not yet built | Roadmap |
+| Mid-week welfare nudge for Tier 2 — not yet implemented | Roadmap |
+| University notification workflow (Tier 3) — manual process currently | Requires clinical/legal sign-off before automation |
+| Clinical review of score thresholds — not yet externally validated | Requires clinical advisor input |
+
+These gaps are tracked in the roadmap and do not affect the safety of the current system — held reflections are never sent, and the audit trail is complete.

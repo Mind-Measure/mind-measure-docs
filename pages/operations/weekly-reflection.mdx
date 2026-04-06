@@ -1,0 +1,119 @@
+# Weekly Reflection
+
+The Weekly Reflection is a personalised editorial email sent to students every Sunday morning. It summarises the student's week through the lens of their Jodie conversations — mood trends, patterns, wins, and a forward prompt for the week ahead.
+
+## Overview
+
+| Property | Value |
+|---|---|
+| Audience | University students (opted in by default) |
+| Frequency | Weekly, Sunday 08:00 UTC |
+| Delivery | Email (AWS SES) + web view + PDF |
+| Data source | `fusion_outputs` check-ins from the previous 7 days |
+| Minimum eligibility | 2+ check-ins with conversation summaries in the week |
+| Opt-out | In-email unsubscribe link; `weekly_reflection_opted_out` flag on `profiles` |
+
+---
+
+## Content Sections
+
+Every reflection contains:
+
+1. **Header** — teal gradient with student name, university, week range, streak badge
+2. **Stats strip** — avg score, best day, week-on-week delta, wellbeing zone, personal best badges
+3. **Milestone banner** — streak milestone callout (7, 14, 21, 30, 60, 100 days)
+4. **Narrative** — AI-generated editorial in three parts: lead (serif with teal italics), body, close (Buttercup blockquote)
+5. **SVG line chart** — daily scores with previous-week comparison line
+6. **Things we noticed** — 3 highlight cards (positive / pattern / note)
+7. **Jodie observed** — single personalised observation from Jodie
+8. **Word cloud** — actual words used by the student across the week
+9. **For next week** — forward prompt with CTA to check in
+10. **Further reading** — up to 3 articles matched to dominant themes (university hub → shared pool → marketing CMS)
+11. **Coming up** — up to 5 university events/nudges matched to themes
+12. **Closing CTA** — "Your reflection is only as rich as your conversations"
+13. **Footer** — privacy notice, unsubscribe link
+
+---
+
+## Technical Architecture
+
+### Pipeline
+
+```
+Vercel cron (Sunday 08:00 UTC)
+  → fetchEligibleStudents()       — profiles with check-ins in last 7 days, opted in
+  → fetchWeekCheckIns()           — fusion_outputs for the week
+  → buildStudentData()            — compute scores, themes, day breakdown
+  → fetchHubArticles()            — theme-matched articles (3 stages)
+  → fetchNudges()                 — university events
+  → fetchPersonalBests()          — 12-week historical comparison
+  → fetchFourWeekTrend()          — prior 3 weekly averages
+  → generateReflectionContent()   — AWS Bedrock (Claude 3.7 Sonnet)
+  → runSafetyCheck()              — score threshold + keyword scan + Bedrock flag
+  → buildEmailHtml()              — full HTML email
+  → sendReflectionEmail()         — AWS SES
+  → recordSend()                  — weekly_reflection_sends (with safety audit data)
+```
+
+### Key Files
+
+| File | Purpose |
+|---|---|
+| `api/reflections/weekly.ts` | Main pipeline, email template, content generation |
+| `api/reflections/view.ts` | Web view endpoint (HMAC-signed URL) |
+| `api/reflections/share-card.ts` | Share card endpoint |
+| `api/reflections/unsubscribe.ts` | Opt-out handler |
+| `database/migrations/013_weekly_reflection.sql` | Initial schema |
+| `database/migrations/014_weekly_reflection_web_view.sql` | content_json / student_data_json columns |
+| `database/migrations/015_weekly_reflection_safeguards.sql` | Safety audit columns + welfare_nudges_sent |
+
+### Database Tables
+
+**`weekly_reflection_sends`**
+
+| Column | Type | Notes |
+|---|---|---|
+| `user_id` | UUID | References profiles |
+| `week_start` | DATE | Monday of reflection week |
+| `status` | TEXT | `sent` / `held` |
+| `send_type` | TEXT | `standard` / `welfare` / `held_safety` / `held_bedrock` / `held_review` |
+| `content_json` | JSONB | Full generated content (for web view) |
+| `student_data_json` | JSONB | Student data snapshot (scores, articles, events) |
+| `safety_check_passed` | BOOLEAN | Whether pre-send check passed |
+| `safety_check_detail` | TEXT | Check-by-check result string |
+| `bedrock_safety_flag` | BOOLEAN | Whether Bedrock flagged crisis content |
+| `prompt_version` | TEXT | e.g. `uni_v2.2` |
+
+**`welfare_nudges_sent`** — records Tier 0 (no engagement) and Tier 2 (pattern) welfare nudges.
+
+### Web View & PDF
+
+Each email contains a HMAC-signed URL (`/api/reflections/view`) valid for the lifetime of the send. The web view renders the full reflection in a browser with print-optimised CSS. The "Download PDF" button calls `window.print()`.
+
+### Prompt Versioning
+
+The Bedrock prompt version is tracked in `PROMPT_VERSION` constant in `weekly.ts` and logged against every send. Current version: `uni_v2.2`. See [Safeguards](/operations/weekly-reflection-safeguards) for the change protocol.
+
+---
+
+## Testing
+
+Trigger a test email manually:
+
+```bash
+curl -X POST "https://admin.mindmeasure.co.uk/api/reflections/weekly?secret=<WEEKLY_REFLECTION_SECRET>" \
+  -H "Content-Type: application/json" \
+  -d '{"testMode": true, "testEmail": "you@example.com"}'
+```
+
+Test mode uses Sophie demo data (University of Worcester) and sends to the specified address. The send is recorded in the DB so web view and PDF links work.
+
+---
+
+## Opt-Out
+
+Students can opt out via:
+1. The unsubscribe link in every email (`/api/reflections/unsubscribe`)
+2. Settings in the mobile app (sets `weekly_reflection_opted_out = TRUE` on their profile)
+
+Opted-out students are excluded from `fetchEligibleStudents()` and will never receive a reflection until they opt back in.

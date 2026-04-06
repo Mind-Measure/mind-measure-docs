@@ -1,0 +1,157 @@
+# Weekly Reflection — Operations Runbook
+
+Operational procedures for the Weekly Reflection pipeline. For feature documentation see [Weekly Reflection](/operations/weekly-reflection). For safeguarding policy see [Safeguarding](/operations/weekly-reflection-safeguards).
+
+---
+
+## Triggering a Send Manually
+
+### Test send (safe — uses demo data)
+
+```bash
+curl -X POST "https://admin.mindmeasure.co.uk/api/reflections/weekly?secret=<WEEKLY_REFLECTION_SECRET>" \
+  -H "Content-Type: application/json" \
+  -d '{"testMode": true, "testEmail": "you@example.com"}'
+```
+
+Returns JSON with `mode: "test"`, `sentTo`, `weekStart`, and the full generated `content`. The send is recorded in the DB so web view links work.
+
+### Production send (triggers for all eligible students)
+
+The cron runs automatically every Sunday at 08:00 UTC. To trigger manually (e.g. after a failed Sunday run):
+
+```bash
+curl -X GET "https://admin.mindmeasure.co.uk/api/reflections/weekly" \
+  -H "Authorization: Bearer <CRON_SECRET>"
+```
+
+⚠️ This will send to all eligible students who have not already received a reflection this week. The `ON CONFLICT DO NOTHING` guard prevents duplicates.
+
+---
+
+## Investigating a Failed Send
+
+### Step 1 — Check Vercel function logs
+
+In the Vercel dashboard: `mind-measure-core` → Functions → `/api/reflections/weekly` → View logs for the relevant Sunday.
+
+Look for:
+- `[WeeklyReflection] X eligible students for YYYY-MM-DD`
+- `[WeeklyReflection] Failed for <user_id>: <error>`
+- `[WeeklyReflection] HELD (held_safety/held_bedrock) for <user_id>: <detail>`
+- `[WeeklyReflection] Complete: X sent, X skipped, X failed`
+
+### Step 2 — Query the DB
+
+Check what was recorded for a given week:
+
+```sql
+SELECT user_id, send_type, safety_check_passed, safety_check_detail,
+       bedrock_safety_flag, prompt_version, sent_at, status
+FROM weekly_reflection_sends
+WHERE week_start = '2026-04-05'
+ORDER BY sent_at DESC;
+```
+
+Check holds specifically:
+
+```sql
+SELECT user_id, send_type, safety_check_detail
+FROM weekly_reflection_sends
+WHERE week_start = '2026-04-05'
+  AND safety_check_passed = FALSE;
+```
+
+---
+
+## Reviewing a Held Reflection
+
+When `safety_check_passed = FALSE`:
+
+1. Note the `send_type` — `held_safety` (score/keyword) or `held_bedrock` (Bedrock flag)
+2. Note the `safety_check_detail` — shows exactly which check failed
+3. Do NOT manually override without review
+4. If you determine the hold was a false positive (e.g. keyword matched in a non-crisis context), update the record:
+
+```sql
+UPDATE weekly_reflection_sends
+SET send_type = 'held_review', status = 'reviewed'
+WHERE user_id = '<uuid>' AND week_start = '<date>';
+```
+
+5. Log your reasoning in the `notes` field if added, or in the internal Slack channel
+
+**Never manually send a held reflection** — re-run the pipeline for the specific student if a resend is needed after review.
+
+---
+
+## Reprocessing a Single Student
+
+If a student's send failed (network error, Bedrock timeout etc.) and needs to be reprocessed:
+
+1. Confirm there is no existing `weekly_reflection_sends` row for that student/week, or delete it:
+
+```sql
+DELETE FROM weekly_reflection_sends
+WHERE user_id = '<uuid>' AND week_start = '<date>';
+```
+
+2. Trigger the production endpoint — the student will be picked up as eligible again.
+
+---
+
+## Checking the Web View for a Specific Send
+
+The web view URL is:
+
+```
+https://admin.mindmeasure.co.uk/api/reflections/view
+  ?userId=<user_id>
+  &weekStart=<YYYY-MM-DD>
+  &token=<hmac>
+```
+
+Generate the token locally:
+
+```js
+const crypto = require('crypto');
+const token = crypto
+  .createHmac('sha256', process.env.WEEKLY_REFLECTION_SECRET)
+  .update(`view:${userId}:${weekStart}`)
+  .digest('hex');
+```
+
+---
+
+## Cron Schedule
+
+Configured in `vercel.json`:
+
+```json
+{ "path": "/api/reflections/weekly", "schedule": "0 8 * * 0" }
+```
+
+Fires at 08:00 UTC every Sunday. Students in the UK receive the email at 08:00 BST (09:00 BST in summer — UTC+1).
+
+---
+
+## Environment Variables Required
+
+| Variable | Purpose |
+|---|---|
+| `WEEKLY_REFLECTION_SECRET` | Authenticates manual triggers and signs web view / unsubscribe URLs |
+| `CRON_SECRET` | Authenticates Vercel cron requests |
+| `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` | Bedrock (content generation) + SES (email send) |
+| `AWS_REGION` | `eu-west-2` |
+| `DB_HOST`, `DB_NAME`, `DB_USER`, `DB_PASSWORD` | Aurora PostgreSQL |
+
+---
+
+## Key Metrics to Monitor
+
+| Metric | Where |
+|---|---|
+| Sends per week | `SELECT COUNT(*) FROM weekly_reflection_sends WHERE week_start = '...' AND send_type = 'standard'` |
+| Hold rate | `SELECT send_type, COUNT(*) FROM weekly_reflection_sends GROUP BY send_type` |
+| Welfare week rate | `SELECT COUNT(*) FROM weekly_reflection_sends WHERE send_type = 'welfare'` |
+| Bedrock flag rate | `SELECT COUNT(*) FROM weekly_reflection_sends WHERE bedrock_safety_flag = TRUE` |
