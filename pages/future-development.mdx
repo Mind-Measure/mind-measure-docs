@@ -2,7 +2,7 @@
 
 Technical work that is planned or deferred. For feature ideas and product roadmap, see [Planning → Roadmap](/planning/roadmap).
 
-**Last Updated**: 28 February 2026
+**Last Updated**: 7 April 2026
 
 ---
 
@@ -12,6 +12,7 @@ The following items were previously tracked here and are now done:
 
 | Item | Status | Notes |
 |------|--------|-------|
+| Weekly Reflection (Phase 1) | **Complete** | Email pipeline, web view, PDF, share card, safeguarding infrastructure (keyword scan, Bedrock safety flag, audit trail, prompt versioning). [Docs](/operations/weekly-reflection) |
 | University Invite Flow | **Complete** | End-to-end tested and live. University admins can invite users via email. |
 | Ecosystem Health Audit | **Complete** | `/api/system/ecosystem-audit` on both University and Pro dashboards. Covers database, APIs, security, deployment, voice agent, mobile app. |
 | Superuser Login Branding | **Complete** | Branded login with campus background, passwordless 6-digit code flow. Both portals. |
@@ -29,18 +30,46 @@ The following items were previously tracked here and are now done:
 
 ## In Progress
 
+### Weekly Reflection — Production Wiring
+
+**Status**: Phase 1 live — wiring phase in progress
+**Applies to**: `mind-measure-core`, `mind-measure-mobile-final`
+
+Remaining work before the Weekly Reflection is fully production-ready:
+
+- **Welfare-modified reflection** — alternate email for negative-only weeks (all check-in scores < 40). Warmer tone, university resources surfaced, recap of any mid-week nudges sent. Student-facing only.
+- **Opt-out toggle in mobile app** — settings page toggle calling `PATCH /api/profile/settings`. Sets `weekly_reflection_opted_out` on `profiles`.
+- **Tier 0 nudge** — gentle email/push when student hasn't checked in for 7+ days. Requires push notification infrastructure (see below).
+- **Superuser audit panel** — Wellbeing Sends read-only view in `admin.mindmeasure.co.uk`. Filters by week, university, send type. Mind Measure staff only.
+- **Jodie prompt improvements** — named events, sleep probe, positive anchor, social probe, week framing. See [Roadmap](/planning/roadmap).
+- **Pro parity** — replicate pipeline in `mind-measure-pro-core` once university is validated.
+
+---
+
+### Welfare Monitoring System
+
+**Status**: Foundation built — Tier 2/3 escalation pending clinical/legal sign-off
+**Applies to**: `mind-measure-core`
+
+The tiered response framework is designed and the infrastructure is in place. See [Safeguarding Policy](/operations/weekly-reflection-safeguards) for the full framework. Blocked on:
+- Clinical advisor review of score thresholds
+- Legal review of DPA terms for Tier 3 university disclosure
+- University welfare contact workflow design
+
+---
+
 ### Streak Rewards
 
-**Status**: Planned — concept stage  
+**Status**: Under consideration — mechanism being reviewed
 **Applies to**: Both mobile apps, admin dashboards
 
-Users are rewarded for regular check-ins with digital vouchers to spend with partner retailers or on campus. See [Roadmap](/planning/roadmap) for full details.
+See [Roadmap](/planning/roadmap) for the full discussion. Not proceeding to engineering until the reward mechanism question is resolved — specifically whether extrinsic rewards undermine the intrinsic engagement that the Weekly Reflection is designed to build.
 
 ---
 
 ### Student Ambassador Platform
 
-**Status**: Planned — concept stage  
+**Status**: Planned — concept stage
 **Applies to**: New standalone system with admin integration
 
 Social media assets library and student ambassador signup, logging, and management system. Ambassadors receive bonuses based on user sign-ups and ongoing engagement. See [Roadmap](/planning/roadmap) for full details.
@@ -49,12 +78,13 @@ Social media assets library and student ambassador signup, logging, and manageme
 
 ### Mobile App Settings Page (Phase 2)
 
-**Status**: Deferred — minimal version deployed  
+**Status**: Deferred — minimal version deployed
 **Applies to**: `mind-measure-mobile-final`, `mind-measure-pro-mobile`
 
 Current settings page has essentials only (Privacy Policy, Terms of Service, Your Privacy, Sign Out). Full implementation deferred until push notification infrastructure is ready.
 
 **Remaining work**:
+- Weekly reflection opt-out toggle (unblocked — can ship now)
 - Notification preferences (check-in reminders, buddy notifications, wellbeing alerts)
 - Privacy preferences (anonymised data sharing consent)
 - `user_preferences` table in Aurora
@@ -64,21 +94,22 @@ Current settings page has essentials only (Privacy Policy, Terms of Service, You
 
 ### Push Notification Infrastructure
 
-**Status**: Not started  
+**Status**: Not started
 **Applies to**: Both mobile apps, AWS backend
+
+Blocks: Tier 0 welfare nudge, buddy enhancements, check-in reminder nudges, settings Phase 2 notification preferences.
 
 **Planned work**:
 - FCM/APNs token registration via Capacitor
 - Backend service for targeted push notifications
 - Notification types: check-in reminders, buddy nudges, wellbeing alerts, crisis escalation
 - Scheduling engine for timed reminders
-- Depends on: Settings page Phase 2 for user preferences
 
 ---
 
 ### Buddy System Enhancements
 
-**Status**: V1 deployed (email-only)  
+**Status**: V1 deployed (email-only)
 **Applies to**: `mind-measure-mobile-final`
 
 **Planned work**:
@@ -91,7 +122,7 @@ Current settings page has essentials only (Privacy Policy, Terms of Service, You
 
 ### Type Safety Enhancement
 
-**Status**: Planned  
+**Status**: Planned
 **Applies to**: All repos
 
 **Planned work**:
