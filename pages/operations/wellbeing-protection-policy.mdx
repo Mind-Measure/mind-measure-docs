@@ -1,0 +1,374 @@
+# Wellbeing Protection Policy
+
+Student safety, escalation protocols, and institutional notification framework.
+
+> **Version:** 2.0 | April 2026  
+> **Status:** Draft — pending clinical advisor and legal review  
+> **Owner:** Mind Measure Ltd
+
+---
+
+## 1. Philosophy and Legal Basis
+
+### 1.1 What Mind Measure Is
+
+Mind Measure is a wellbeing monitoring platform, not a clinical service. It uses a daily AI-powered conversational check-in (via Jodie) to generate a personal Wellbeing Score for each student. Individual data remains private to the student. Universities receive only anonymised, aggregated, population-level insight.
+
+The platform does not diagnose, triage, prescribe, or classify individual risk. It does not replace counselling services, crisis lines, or statutory safeguarding processes. It sits upstream of those systems — providing earlier visibility into patterns of difficulty that might otherwise go unnoticed until a student reaches crisis point.
+
+### 1.2 What Mind Measure Is Not
+
+Mind Measure is not a medical device, a clinical decision support tool, or a safeguarding service. It does not generate individual risk scores for institutional consumption. It does not monitor students on behalf of universities. It does not create a surveillance relationship between the institution and the student.
+
+This distinction determines the legal obligations that apply, the expectations that should be set with partner institutions, and the thresholds at which Mind Measure may act.
+
+### 1.3 The Grey Area This Policy Addresses
+
+The clearest scenarios are at each extreme. A student scoring consistently in the 70s needs nothing beyond a warm weekly summary. A student expressing active suicidal ideation during a check-in is in crisis, and the response is immediate and unambiguous.
+
+The difficult territory lies between those poles: a student whose scores have dropped steadily over three weeks; a student whose language carries themes of hopelessness without explicit crisis content; a student who checks in every day but whose trajectory is visibly declining. These are the situations where Mind Measure has signal that something may be wrong, but where acting too aggressively risks breaching privacy and trust, while acting too cautiously risks failing someone who needed help.
+
+This policy exists to define how Mind Measure navigates that grey area: what triggers concern, what actions follow, what the student is told, what the university is told, and what is retained for audit.
+
+### 1.4 Duty of Care: The UK Legal Landscape
+
+The question of whether UK universities owe a common law duty of care to their students in respect of mental health remains legally unsettled.
+
+**The Abrahart Case (2022, appealed 2024)**  
+In *Abrahart v University of Bristol*, the County Court found there was no statute or precedent establishing a duty of care owed by a university to a student to take reasonable steps to avoid psychiatric injury. The High Court, hearing the appeal in February 2024, declined to rule on the negligence question, noting its potentially wide application and significance. The duty of care question therefore remains open.
+
+What the Abrahart case did establish clearly is that universities have an anticipatory duty under the Equality Act 2010 to make reasonable adjustments for disabled students, including those with mental health conditions, even without formal diagnosis. The EHRC advice note following the case states that where the effects of a condition are apparent from a student's behaviour, the university has constructive knowledge of the disability.
+
+**The Government Position (January 2025)**  
+The Labour government stated that the circumstances where a duty of care might arise would be determined by the courts on a case-by-case basis. There is currently no statutory duty of care specific to student mental health.
+
+**UUK Suicide-Safer Universities Framework**  
+Published in 2018, updated in 2022. Not regulatory, but it represents sector consensus and is the standard against which the OIA will assess complaints.
+
+### 1.5 GDPR Basis for Processing
+
+Mind Measure processes special category data (health data) under the following legal bases:
+
+| Processing Activity | Article 6 Basis | Article 9 Condition |
+|---|---|---|
+| Daily check-in data collection and scoring | Explicit consent (Art 6(1)(a)) | Explicit consent (Art 9(2)(a)) |
+| Generating Weekly Reflection content | Legitimate interests (Art 6(1)(f)) | Explicit consent (Art 9(2)(a)) |
+| Safety audit trail (scores, hold reasons) | Legitimate interests (Art 6(1)(f)) | Substantial public interest (Art 9(2)(g)) / DPA Sch 1 para 18 |
+| Identified disclosure to university safeguarding contact | Explicit consent (Art 6(1)(a)) | Explicit consent (Art 9(2)(a)), with vital interests (Art 9(2)(c)) as fallback for incapacity |
+
+### 1.6 The Consent Model for Identified Disclosure
+
+Previous versions of this policy relied on vital interests as the legal basis for disclosing student identity to university safeguarding teams. The ICO is clear that vital interests under Article 9(2)(c) applies only where the data subject is physically or legally incapable of giving consent. This is too narrow and too uncertain to serve as the primary basis for a scalable safeguarding system.
+
+The revised approach is to obtain explicit, informed, specific consent at account creation. The student consents, as a condition of using the platform, to identified disclosure to their university's safeguarding team if defined safety thresholds are met. This consent is:
+- **Specific** — limited to the safeguarding disclosure scenario, not a blanket data-sharing consent
+- **Informed** — the student is told exactly what triggers it, what is shared, and who receives it
+- **Given before processing begins** — presented as a dedicated step during account creation
+
+As a secondary basis, Mind Measure can rely on substantial public interest under DPA 2018 Schedule 1, paragraph 18 (safeguarding of children and individuals at risk). This does not require consent. Having both bases makes the position robust. Vital interests remains available as a fallback where a student is incapable of consenting.
+
+**The Northumbria Precedent**  
+The OfS-funded Mental Health Analytics project at Northumbria University used educational data analytics to identify students experiencing mental health difficulties and offered early intervention through targeted nudge emails. Students consented at enrolment. 61% consented. The OfS features this as effective practice. Mind Measure's consent model follows the same principle: transparent, specific consent at enrolment for a defined safeguarding purpose.
+
+---
+
+## 2. Tiered Response Framework
+
+Six levels. Levels 0–2 are handled entirely within the product. Level 3 introduces the welfare template. Level 4 triggers automatic identified disclosure. Level 5 covers real-time crisis response.
+
+| Level | Name | Signal Criteria | University Notified? |
+|---|---|---|---|
+| 0 | Thriving | Week average ≥ 70 | No |
+| 1 | Steady | Week average 50–69 | No |
+| 2 | A Harder Week | Week average 40–49 | No |
+| 3 | Welfare Week | All check-ins below 40 (min 3 required) | No — student receives welfare template with support resources |
+| 4 | Safeguarding Disclosure | Any compound trigger met (see §2.3) | Yes — automatic, identified disclosure to safeguarding contact |
+| 5 | Real-Time Crisis | Explicit crisis disclosure during check-in | Yes — immediate identified disclosure *(not yet built)* |
+
+### 2.1 Levels 0 to 2: Standard Response
+
+Handled entirely within the Weekly Reflection pipeline. Student receives their reflection with appropriate tone adjustments. No internal escalation, no university notification.
+
+### 2.2 Level 3: Welfare Week
+
+Every check-in in the week falls below 40, with at least three check-ins completed. The student receives a welfare reflection: direct, honest, second-person acknowledgement. Support resources are surfaced in proximity order: buddy list, university wellbeing team (with phone and hours), Student Minds. Samaritans is deliberately excluded at this level.
+
+The university is not notified at Level 3. This is a student having a genuinely bad week. Automatically identifying such students to safeguarding teams would be disproportionate and would overwhelm teams with referrals they cannot meaningfully act on.
+
+However, Level 3 data feeds into the compound trigger for Level 4. A student who has multiple welfare weeks contributes to the sustained-concern criteria described below.
+
+### 2.3 Level 4: Safeguarding Disclosure (Compound Trigger)
+
+This is the critical change from the previous policy. Level 4 now triggers automatic, identified disclosure to the university's designated safeguarding contact. No manual review is in the loop for the send decision. The student consented to this at account creation.
+
+The disclosure is triggered when **any one** of the following compound criteria is met:
+
+| Trigger | Definition | Rationale |
+|---|---|---|
+| **A — Sustained critical scores** | Week average below 25 for two consecutive weeks (minimum 3 check-ins per week) | A single bad week could resolve. Two consecutive weeks in the deep critical zone is a sustained pattern. |
+| **B — Repeated crisis language** | Bedrock `safety_flag` triggered on two or more separate check-ins within a 7-day window | A single flag could be a misfire. Two flags from separate conversations in the same week is a strong signal. |
+| **C — Score collapse** | A drop of 40+ points in weekly average compared to the student's trailing 4-week average | Catches the student who was at 75 and is now at 30. Trajectory matters as much as absolute score. |
+| **D — Sustained welfare pattern** | Three or more welfare weeks (Level 3) within any 6-week rolling window | A student who keeps hitting welfare-week threshold is not recovering between difficult periods. Catches low-and-slow deterioration. |
+
+**Why below 40 is too low for automatic disclosure**  
+Level 3 (all check-ins below 40) captures students who are having a genuinely difficult week. At scale, perhaps 1–3% of active users will hit this threshold in any given week. For 100,000 users, that could be 1,000–3,000 welfare weeks. Automatically identifying all of those students to their universities would overwhelm safeguarding teams and erode student trust. The compound trigger ensures disclosure is reserved for sustained or severe concern where not acting would be indefensible.
+
+**Why this can be automated**  
+The previous policy required human review before any disclosure. At founder scale with a handful of pilot universities, that is manageable. At scale with hundreds of thousands of users, it is a single point of failure. The compound triggers are precise, machine-enforceable, and auditable. Human review moves from gating the disclosure decision to quality-assuring it after the fact.
+
+### 2.4 Level 5: Real-Time Crisis Response
+
+> **Status: Not yet built. Critical priority.**
+
+If Jodie's conversation captures an explicit statement of intent to self-harm or end their life during a check-in, this triggers immediate disclosure regardless of weekly score patterns. This is not a weekly-cycle event. It happens in real time.
+
+The system response at Level 5 includes: immediate surfacing of crisis resources within the conversation (Samaritans, university emergency contact, 999); automated identified notification to the university's safeguarding contact within minutes; internal alert to Mind Measure staff.
+
+Until this is built, Jodie's conversational guidance is the only in-session response, and the weekly reflection hold is the detection mechanism.
+
+---
+
+## 3. University Notifications
+
+### 3.1 Content of Level 4 Notification
+
+| Field | Content | Purpose |
+|---|---|---|
+| Student name | Full name as registered | Identification |
+| University email | Institutional email address | Contact and verification |
+| Trigger type | Which compound criterion was met | Context for urgency and nature of concern |
+| Current week average | Numerical score | Severity indicator |
+| Trend | Direction and duration (e.g. "declining over 3 weeks from 52 to 23") | Pattern context |
+| Date of most recent check-in | Timestamp | Recency |
+| Recommendation | "We recommend that your safeguarding team makes contact with this student as a priority." | Clear call to action |
+
+**What is NOT included:** Conversation transcripts. Specific things the student said to Jodie. Daily score breakdowns. Bedrock-generated narrative content. The university gets enough to act, not enough to surveil.
+
+### 3.2 Content of Level 5 Notification
+
+Same fields as Level 4, plus: indication that crisis-level content was detected during a live check-in; the time of the check-in; and a stronger recommendation: *"This student may be at immediate risk. We recommend urgent contact."* Level 5 notifications are marked high priority.
+
+### 3.3 Who Receives Notifications
+
+Each university designates a safeguarding contact during onboarding: a named individual with decision-making authority within the university's welfare or safeguarding team — not a generic departmental inbox.
+
+The `universities` table requires the following fields (pending migration):
+- `safeguarding_contact_name` — VARCHAR(255) NOT NULL
+- `safeguarding_contact_email` — VARCHAR(255) NOT NULL
+- `safeguarding_contact_phone` — VARCHAR(50)
+- `safeguarding_contact_role` — VARCHAR(255)
+
+These are mandatory at onboarding. Universities must confirm or update annually.
+
+### 3.4 Delivery and Audit
+
+Notifications sent via secure email from `safeguarding@mindmeasure.co.uk` (dedicated SES verified identity). Subject line is neutral. Every notification is logged with: timestamp, recipient, content, trigger type, student ID, and the compound criterion met. Logs retained for 36 months.
+
+Mind Measure does not follow up to verify the university's response. The university is an independent data controller with its own safeguarding obligations. Mind Measure's role ends at notification.
+
+### 3.5 Notification Is Mandatory
+
+University notification at Level 4 and 5 is a mandatory component of the data processing agreement, not an optional feature. If Mind Measure has signal that a student may be at serious risk, withholding that information from the only party positioned to act would be indefensible.
+
+---
+
+## 4. Student Transparency and Consent
+
+### 4.1 The Onboarding Consent
+
+During account creation, students are presented with a specific, separate consent step for the safeguarding disclosure pathway. This is not buried in the privacy policy. A distinct screen, clear language, presented before first check-in.
+
+Proposed onboarding copy:
+
+> *"Mind Measure keeps your data private. Your university cannot see your individual scores or what you talk about with Jodie. But your safety matters more than your data. If your Wellbeing Scores show sustained serious concern, or if you tell Jodie something that suggests you may be at risk, we will let your university's safeguarding team know your name and that you may need support. We will not share what you said. This is how the platform works. It is not optional, because a system that spots someone in trouble and does nothing is not a system worth building. If you are not comfortable with this, please do not create an account."*
+
+This copy does three things: it tells the student exactly what will happen; it explains why; and it gives them a genuine choice.
+
+### 4.2 Privacy Policy and T&Cs
+
+The privacy policy and terms of service must include:
+- The specific compound trigger criteria that activate disclosure (Triggers A–D)
+- The categories of data shared (name, email, score summary, trigger type)
+- The identity of the recipient (university safeguarding contact)
+- The legal basis relied upon (explicit consent under Art 9(2)(a), with substantial public interest as secondary basis)
+- The student's right to delete their account at any time, which terminates all processing
+
+### 4.3 The Deterrent Question
+
+Does this deter students from being honest with Jodie? Possibly. But the alternative is a system that collects deeply personal wellbeing data, detects serious trouble, and does nothing. The students most at risk of gaming the system are those with enough executive function to manage their presentation. The students who most need this safety net are those who cannot mask their distress even if they wanted to. The system works best for the people who need it most.
+
+### 4.4 What the Student Is Not Told
+
+The student is not notified at the moment of disclosure. Telling someone in potential crisis that their university has been alerted could cause distress, panic, or disengagement at the worst possible moment. The university's safeguarding team is responsible for making contact in a way that is sensitive and proportionate. This decision should be reviewed with clinical input.
+
+---
+
+## 5. Scaling: From Manual Review to Automated Safeguarding
+
+### 5.1 Why Manual Review Cannot Scale
+
+The previous policy required a Mind Measure staff member to review every Level 4 hold and make a judgement call before any university notification. At pilot scale: manageable. At product scale: a single point of failure — delayed review when staff are unavailable; inconsistency across reviewers; liability exposure during the review delay.
+
+### 5.2 The Automated Model
+
+The compound trigger criteria are precise, machine-enforceable, and auditable. When any criterion is met, the system generates and sends the notification automatically. No human is in the loop for the send decision.
+
+Human review shifts from gating the decision to quality-assuring it. A post-notification review queue allows Mind Measure staff to review every automated disclosure within 24 hours after it has been sent, confirming it was correctly triggered or flagging it as a false positive for threshold refinement.
+
+### 5.3 Expected Volumes
+
+| Active Users | Est. Welfare Weeks (L3) / week | Est. L4 Disclosures / week | Est. L5 Real-Time / week |
+|---|---|---|---|
+| 10,000 | 100–300 | 5–15 | 0–2 |
+| 50,000 | 500–1,500 | 25–75 | 1–5 |
+| 100,000 | 1,000–3,000 | 50–150 | 2–10 |
+| 500,000 | 5,000–15,000 | 250–750 | 10–50 |
+
+### 5.4 Threshold Calibration
+
+Current thresholds are based on product reasoning. They have not been clinically validated. Before the automated system goes live, these thresholds must be reviewed by a clinical advisor with experience in student mental health.
+
+The system should also support per-university threshold adjustment within a permitted range, subject to clinical sign-off. The permitted range prevents universities from setting thresholds so high that no student ever triggers disclosure.
+
+---
+
+## 6. Evidence and Audit
+
+### 6.1 Retention Schedule
+
+| Data Type | Retention | Access |
+|---|---|---|
+| Safety audit records (scores, hold reasons, send_type, check detail) | 36 months | Superuser panel |
+| Weekly Reflection content JSON | 12 months | Superuser panel |
+| Disclosure notification logs (recipient, content, trigger, criterion) | 36 months | Superuser panel |
+| Audio files | Deleted within 24 hours of transcription | System only |
+| Still images (facial analysis) | Deleted immediately after processing | System only |
+| Conversation transcripts/summaries | Duration of participation + 12 months | Student (own data); Mind Measure (safety review) |
+
+### 6.2 Student Welfare Record View
+
+The current Wellbeing Sends audit panel is designed for operational monitoring. It is not fit for purpose as an evidence retrieval tool. A purpose-built student welfare record view is required, with:
+- Search by student ID or email
+- Full chronological timeline of check-ins, scores, reflections, holds, and disclosures
+- Exportable as a structured PDF
+- Access restricted to a designated legal/compliance role
+
+This is not optional. A coroner's inquiry will expect a complete, structured record. A subject access request requires the same.
+
+### 6.3 Post-Notification Review Queue
+
+Every automated Level 4 disclosure is added to a review queue. A Mind Measure staff member reviews each within 24 hours, confirming: the correct trigger was met; the notification was sent to the correct contact; and whether the case warrants additional action. False positives are flagged for threshold refinement. The review is logged against the disclosure record.
+
+---
+
+## 7. Institutional Configuration
+
+| Configuration | Status | Notes |
+|---|---|---|
+| Safeguarding contact (name, email, phone, role) | Needs dedicated fields added | Mandatory at onboarding. Must be refreshed annually. |
+| Wellbeing team resources (name, phone, hours) | Implemented via CMS | Surfaces in Level 3 welfare reflections |
+| Counselling services / wellbeing URL | Implemented via CMS | Surfaces in Level 3 welfare reflections |
+| Disclosure thresholds | Fixed (pending clinical review) | Roadmap: adjustable within permitted range, subject to clinical sign-off |
+| Notification format/encryption | Not yet implemented | Roadmap |
+
+**What universities cannot customise:** disable the safety checking pipeline; access individual student data; set thresholds outside the permitted range; opt out of receiving Level 4/5 notifications; request student identification at lower tiers.
+
+---
+
+## 8. UK Regulatory Context
+
+### 8.1 Office for Students
+
+The OfS does not publish prescriptive guidance on notification thresholds or data-sharing protocols for third-party wellbeing platforms. Their approach is to fund and showcase effective practice through case studies. The most directly relevant OfS-funded project is the Northumbria University Mental Health Analytics programme (see §1.6).
+
+### 8.2 ICO Guidance
+
+The ICO's 2021 guidance specifically for universities and colleges states that data protection law allows sharing personal data in urgent or emergency situations to prevent loss of life or serious physical, emotional, or mental harm. The ICO does not seek to penalise organisations acting in good faith.
+
+Mind Measure's data processing agreement with each university should document the Level 4/5 notification pathway as a planned, lawful disclosure mechanism, stating: circumstances triggering disclosure; legal basis; categories of data shared; and the university's obligations on receipt.
+
+### 8.3 UUK Frameworks
+
+The Suicide-Safer Universities framework emphasises proactive identification of at-risk students, clear escalation pathways, and the triangle of care model (students, professionals, loved ones). Mind Measure's notification pathway serves the professional leg of this triangle.
+
+The Stepchange framework (2017, relaunched 2020) provides the strategic context for whole-university approaches to mental health. Mind Measure's population-level insight supports Stepchange implementation; the safeguarding disclosure pathway adds an individual-level safety net that population data alone cannot provide.
+
+### 8.4 Equality Act 2010
+
+Mind Measure's population-level data may help universities identify where anticipatory adjustments are needed under the Equality Act. The platform should not be positioned as a tool for discharging Equality Act duties at the individual level — it provides population insight and, in defined circumstances, identified safeguarding alerts. It does not provide the individual clinical assessment that reasonable adjustments require.
+
+---
+
+## 9. Gaps, Limitations, and Known Risks
+
+### 9.1 What Mind Measure Cannot Do
+
+Mind Measure cannot diagnose mental health conditions, predict suicide with certainty, replace professional clinical assessment, guarantee identification of every at-risk student, force engagement with support services, or verify that a university has acted on a notification. The Wellbeing Score is a behavioural signal derived from conversational AI analysis, not a clinical measure.
+
+### 9.2 Technical Gaps
+
+| Gap | Priority | Risk |
+|---|---|---|
+| Real-time crisis response during check-in (Level 5) | Critical | Current in-session response limited to Jodie's conversational guidance |
+| Clinical validation of score thresholds | Critical | Thresholds based on product logic, not clinical evidence |
+| Compound trigger engine | High | Cross-week pattern evaluation not yet implemented |
+| Automated Level 4 notification pipeline | High | Disclosures require manual staff action |
+| Post-notification review queue | High | No QA mechanism for automated disclosures |
+| Student welfare record view (evidence retrieval) | High | Cannot produce evidence exports for legal requests |
+| Dedicated safeguarding_contact database fields | High | Notifications may go to wrong contact |
+| Onboarding consent screen | High | Art 9(2)(a) basis unavailable without this screen |
+| Mid-week welfare nudge (Level 3/4) | Medium | No proactive contact between check-ins when signal is concerning |
+| Tier 0 nudge (no check-ins 7+ days) | Medium | Students who disengage are invisible |
+| Per-university threshold configuration | Medium | Currently one-size-fits-all |
+
+### 9.3 The Signal's Limitations
+
+A low score does not mean a student is in crisis. A high score does not mean they are safe. Students may game the system or mask distress. A student who stops checking in generates no signal. Mind Measure should never be positioned as a comprehensive safety net. It is one signal among many.
+
+---
+
+## 10. Next Steps
+
+| Action | Owner | Priority |
+|---|---|---|
+| Appoint clinical advisor to validate compound trigger thresholds | Keith | Critical |
+| Draft onboarding consent screen and T&Cs safeguarding clause | Keith / Legal | Critical |
+| Legal review of consent model (freely given, specific, informed) | Legal | Critical |
+| Draft DPA addendum covering Level 4/5 notification pathway | Legal | Critical |
+| Update privacy policy with disclosure triggers and data categories | Keith / Legal | Critical |
+| Add safeguarding_contact fields to universities table | Development | High |
+| Build compound trigger evaluation engine | Development | High |
+| Build automated Level 4 notification pipeline | Development | High |
+| Build post-notification review queue | Development | High |
+| Build student welfare record view (evidence retrieval) | Development | High |
+| Design and build real-time crisis response (Level 5) | Product / Clinical | Critical |
+| Design mid-week welfare nudge for Level 3 | Product | Medium |
+| Monitor NCISH findings and Peck Taskforce output | Keith | Ongoing |
+
+---
+
+## References
+
+Abrahart v University of Bristol [2022] (County Court); The University of Bristol v Dr Robert Abrahart [2024] EWHC 299 (KB).
+
+Equality and Human Rights Commission (2024) Advice note for the higher education sector from the legal case of University of Bristol vs Abrahart.
+
+House of Commons Library (2025) Student mental health in England: Statistics, policy, and guidance. CBP-8593.
+
+ICO (2021) Sharing personal data in an emergency: a guide for universities and colleges.
+
+ICO (2024) Information sharing in mental health emergencies at work.
+
+Northumbria University / OfS (2021) Mental health analytics: An innovative approach to understanding students' wellbeing. OfS effective practice case study.
+
+Office for Students (2024) Student mental health resources: Information sharing; Risk.
+
+Universities UK / PAPYRUS (2018, updated 2022) Suicide-Safer Universities framework.
+
+Universities UK (2017, relaunched 2020) Stepchange: Mentally Healthy Universities.
+
+Farrer & Co (2022) Trusted contacts: new UUK guidance for suicide-safer universities.
+
+Farrer & Co (2023) University statutory duty of care for students.
+
+HEPI (2024) Creating Robust Safeguarding Policies to Enhance the Student Experience.

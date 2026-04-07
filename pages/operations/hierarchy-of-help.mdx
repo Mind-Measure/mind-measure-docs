@@ -1,45 +1,61 @@
 # Hierarchy of Help
 
-This document defines how Mind Measure responds to students at every point on the wellbeing spectrum — from a strong week to an acute crisis. It covers what the system does automatically, what Mind Measure staff do, and what universities are told and when.
+This document defines how Mind Measure responds to students at every point on the wellbeing spectrum — from a strong week to an acute crisis. It covers what the system does automatically, what universities are told and when, and what is retained for audit.
 
-> **Status:** Draft — pending clinical advisor review before Tier 3 automation is enabled  
-> **Owner:** Mind Measure  
-> **Last reviewed:** April 2026
+> **Version:** 2.0 — updated April 2026  
+> **Status:** Draft — pending clinical advisor and legal review before Level 4 automation is enabled  
+> **Owner:** Mind Measure Ltd  
+> **Supersedes:** v1.0 (April 2026)  
+> **Full policy document:** [Wellbeing Protection Policy](/operations/wellbeing-protection-policy)
 
 ---
 
 ## Philosophy
 
-The hierarchy of help is built on four principles:
+The hierarchy is built on four principles.
 
 **1. Meet the student where they are.**
-A student having a difficult week does not need to be referred to a crisis line. A student in crisis does not need a warm weekly summary. The tone, content, and resources surfaced at each level should feel proportionate — not alarming when things are hard, not dismissive when things are serious.
+A student having a difficult week does not need to be referred to a crisis line. A student in crisis does not need a warm weekly summary. Tone, content, and resources at each level should feel proportionate.
 
 **2. Start with the student, not the institution.**
-The default is always to communicate with the student first. Universities are not notified unless the threshold is high enough to justify overriding the student's privacy, and even then, notification is handled carefully and proportionately.
+The default is always to communicate with the student first. Universities are not notified unless the threshold is high enough to justify overriding the student's privacy — and even then, notification is handled carefully and proportionately.
 
 **3. Honest, not clinical.**
-Mind Measure is not a clinical service. Our voice is that of an attentive, honest friend — we notice things, we name them plainly, and we point towards help without overstating our own role. We do not diagnose, prescribe, or promise outcomes.
+Mind Measure is not a clinical service. Our voice is that of an attentive, honest friend: we notice things, we name them plainly, and we point towards help without overstating our own role. We do not diagnose, prescribe, or promise outcomes.
 
 **4. Predictable and auditable.**
 Every response follows a defined protocol. Every decision is logged. Universities and regulators can ask what happened for any student and receive a clear, documented answer.
 
 ---
 
-## The Levels
+## What changed in v2.0
 
-There are six levels. Levels 0–2 are handled entirely within the product. Level 3 introduces internal Mind Measure review. Levels 4–5 involve institutional disclosure.
+The major change from v1.0 is at **Level 4**.
+
+| | v1.0 | v2.0 |
+|---|---|---|
+| Level 4 trigger | Week avg < 25 OR crisis language detected | Four compound triggers (any one sufficient) |
+| Send decision | Manual human review | Automated — no human in the loop |
+| University notification | Anonymous: "a student may need support" | **Identified**: name, email, score, trigger type |
+| Legal basis for disclosure | Vital interests (Art 6(1)(d)) | Explicit consent (Art 9(2)(a)) + substantial public interest |
+| Level 5 | Manual notification after review | Real-time crisis response during check-in (not yet built) |
 
 ---
 
-### Level 0 — Thriving (Week avg 70+)
+## The Levels
+
+Six levels. Levels 0–2 are handled entirely within the product. Level 3 introduces welfare messaging. Level 4 is automated identified disclosure. Level 5 is real-time crisis.
+
+---
+
+### Level 0 — Thriving (Week avg ≥ 70)
 
 **Signal:** Average check-in score 70 or above.
 
 **Student experience:**
-Standard Weekly Reflection. Celebratory in tone — acknowledges what went well, names specific moments, keeps it grounded and specific rather than generic. No false notes. The student's achievements are observed accurately, not inflated.
+Standard Weekly Reflection. Celebratory in tone — acknowledges what went well, names specific moments. Grounded, not inflated.
 
-**Resources surfaced:** None (unless an event or article is contextually relevant).
+**Resources surfaced:** None unless an article or event is contextually relevant.
 
 **Internal action:** None.
 
@@ -54,7 +70,7 @@ Standard Weekly Reflection. Celebratory in tone — acknowledges what went well,
 **Student experience:**
 Standard Weekly Reflection. Warm and observational. Acknowledges the shape of the week honestly — if some days were harder, names them. Does not flatten a mixed week into a positive one.
 
-**Resources surfaced:** Contextually relevant articles and university events only (based on conversation themes, not score level).
+**Resources surfaced:** Contextually relevant articles and events only — matched to conversation themes, not score level.
 
 **Internal action:** None.
 
@@ -62,161 +78,203 @@ Standard Weekly Reflection. Warm and observational. Acknowledges the shape of th
 
 ---
 
-### Level 2 — A harder week (Week avg 40–49)
+### Level 2 — A Harder Week (Week avg 40–49)
 
 **Signal:** Average check-in score 40–49.
 
 **Student experience:**
-Standard Weekly Reflection with adjusted tone. The narrative acknowledges that it has been a tougher week without dwelling on it. Any positive moments or turns are noted. The forward prompt is particularly intentional at this level — it names something specific and constructive rather than giving generic encouragement.
+Standard Reflection with adjusted tone. Bedrock prompt instructed to name difficulty directly and avoid minimising it, while keeping tone restrained and honest — not alarming. Any positive moments or turns are noted. The forward prompt is particularly intentional at this level.
 
-The Bedrock prompt is instructed to be more direct about naming difficulty and avoid minimising it, while still keeping the tone restrained and honest rather than alarming.
+**Resources surfaced:** Articles and events matched to conversation themes. No crisis resources — disproportionate at this level.
 
-**Resources surfaced:** Articles and events matched to conversation themes. No crisis resources at this level — it would be disproportionate.
-
-**Internal action:** Logged as a standard send. No flag raised.
+**Internal action:** Logged as standard send. No flag raised.
 
 **University notification:** None.
 
 ---
 
-### Level 3 — A welfare week (All check-ins < 40)
+### Level 3 — Welfare Week (All check-ins < 40)
 
-**Signal:** Every check-in score in the week is below 40 (minimum 3 check-ins required for this trigger). This is a pattern, not a single low day.
+**Signal:** Every check-in score in the week is below 40 (minimum 3 check-ins required for this trigger). A pattern, not a single low day.
 
 **Student experience:**
-**Welfare Reflection** — a modified email template. The key differences from a standard reflection:
+**Welfare Reflection** — modified email template with the following characteristics:
 
-- Opens with direct, honest acknowledgement: *"It's been a tough week, [Name]. No point in not acknowledging that."*
-- References actual scores plainly: *"Your scores were below 40 for each of your check-ins this week."*
-- Connects patterns where they exist: *e.g. sleep difficulties feeding into feeling overwhelmed.*
-- Notes any positive moments honestly, without over-playing them.
-- Uses **second person throughout** — addresses the student directly, not as a report about them.
-- **No score strip or chart** — data emphasis would feel clinical at this level.
+- Opens with direct, honest second-person acknowledgement: *"It's been a tough week, [Name]. No point in not acknowledging that."*
+- References actual scores plainly
+- Connects patterns where they exist (e.g. sleep difficulties feeding into feeling overwhelmed)
+- Notes any positive moments honestly, without over-playing them
+- **No score strip or chart** — data emphasis feels clinical at this level
 
 **Support section** (ordered by proximity and ease):
-1. Buddy list — "Have you spoken to anyone on your buddy list?" — personal, low friction, not institutional.
-2. University wellbeing team — with phone number and hours from the university's configured resources.
-3. Student Minds — national student mental health charity, for those who want something less formal than a university service.
+1. Buddy list — personal, low friction, not institutional
+2. University wellbeing team — phone number and hours from configured resources
+3. Student Minds — national student charity for those who want something less formal
 
-**What is NOT included at this level:**
-- Samaritans — this would be disproportionate and potentially alarming for a student who is having a hard week but is not in crisis. Samaritans-level resources indicate Tier 4/5.
+**Deliberately excluded at Level 3:** Samaritans — disproportionate at this level and potentially alarming for a student who is having a hard week but is not in crisis.
+
+**Why no university notification at Level 3:**
+A student having a genuinely bad week — exam stress, a breakup, a difficult flatmate. At 100,000 users, Level 3 could generate 1,000–3,000 welfare weeks per week. Automatically identifying these students to safeguarding teams would overwhelm them and erode student trust.
+
+**However:** Level 3 data feeds directly into the Level 4 compound trigger. Three or more welfare weeks within any 6-week rolling window triggers Level 4 disclosure.
 
 **Internal action:**
-- `send_type` logged as `welfare` in `weekly_reflection_sends`.
-- Visible in the Wellbeing Sends audit panel.
-- No automatic alert — Mind Measure staff may notice patterns in the audit panel.
+- `send_type` logged as `welfare` in `weekly_reflection_sends`
+- Visible in the Wellbeing Sends audit panel
 
-**University notification:** None automatically. Mind Measure staff may choose to make contact with a university if a pattern of welfare weeks is observed for the same student.
+**University notification:** None automatically.
 
 ---
 
-### Level 4 — Held (Week avg < 25 OR crisis language detected)
+### Level 4 — Safeguarding Disclosure (Compound trigger met)
 
-**Signal:** One of:
-- Average weekly score below 25 (deep Critical zone across the whole week)
-- Bedrock returns `safety_flag: true` (conversation summaries contain references to self-harm, suicidal ideation, or acute crisis)
-- Keyword scan detects crisis terms in generated content or conversation summaries
+**Signal:** Any one of four compound criteria is met — see below.
 
-**Student experience:**
-**Reflection is held — no email is sent.** Sending a personalised weekly summary to a student in acute distress is not appropriate, regardless of how carefully it is written.
+This is the critical change from v1.0. Level 4 now triggers **automatic, identified disclosure** to the university's designated safeguarding contact. No human is in the loop for the send decision. The student consented to this at account creation.
 
-The student receives nothing from the Weekly Reflection pipeline this week. This should be considered alongside other signals (e.g. in-app check-in responses, buddy system) to understand what contact the student is receiving.
+#### Compound triggers (any one is sufficient)
 
-> ⚠️ **Gap (not yet implemented):** The student currently receives no contact in this case beyond whatever happens during the check-in itself. A mid-week welfare nudge or in-app message at this level is on the roadmap.
+| Trigger | Definition | Rationale |
+|---|---|---|
+| **A — Sustained critical scores** | Week average below 25 for two consecutive weeks (min 3 check-ins per week) | A single bad week could resolve. Two consecutive weeks in the deep critical zone is a sustained pattern that demands intervention. |
+| **B — Repeated crisis language** | Bedrock `safety_flag: true` triggered on 2 or more separate check-ins within a 7-day window | A single flag could be a misfire. Two flags from separate conversations in the same week is a strong signal. |
+| **C — Score collapse** | A drop of 40+ points in weekly average compared to the student's trailing 4-week average | Catches the student who was at 75 and is now at 30. Trajectory matters as much as absolute score. |
+| **D — Sustained welfare pattern** | Three or more welfare weeks (Level 3) within any 6-week rolling window | Catches low-and-slow deterioration. A student who keeps hitting the welfare-week threshold is not recovering between difficult periods. |
 
-**Internal action:**
-- `status` logged as `held_safety` or `held_bedrock` in `weekly_reflection_sends`.
-- `safety_check_detail` records which check triggered the hold.
-- **Sentry alert sent to Mind Measure** *(not yet implemented — roadmap)*.
-- Mind Measure reviews within 24 hours.
+> **Important:** These thresholds are based on product reasoning and have not yet been clinically validated. Before the automated system goes live, a clinical advisor must review the specific numbers.
 
-**University notification:** Depends on Mind Measure review. If the hold is reviewed and the concern is confirmed, the university welfare contact is notified — see Level 5 below.
+#### Automated actions when Level 4 triggers
 
----
+- Reflection held — no email to student this week
+- Structured identified email sent to university's `safeguarding_contact_email`
+- Disclosure logged to `disclosure_notifications` table
+- Added to post-notification review queue (24-hour staff review)
+- Internal Sentry alert to Mind Measure staff
 
-### Level 5 — University notification (Confirmed acute risk)
+#### Why automated rather than human-reviewed
 
-**Signal:** A Level 4 hold has been reviewed by Mind Measure staff and the concern is confirmed as serious.
+At pilot scale (hundreds of users), manual review is manageable. At product scale (hundreds of thousands of users), it becomes a single point of failure: delayed review when staff are unavailable; inconsistency across reviewers; liability exposure during review delays. The compound triggers are precise, machine-enforceable, and auditable. Human review shifts from gating the decision to quality-assuring it within 24 hours after the send.
 
-This is not an automated action. A human being reviews the hold, considers all available context, and makes a judgement call.
+**Student experience:** Reflection is held — no email. The student currently receives no proactive contact between check-ins at this level. A mid-week welfare nudge is on the roadmap.
 
-**Student experience:**
-Nothing from the Weekly Reflection pipeline. The student may receive separate contact from their university welfare service as a result of the notification.
-
-**Internal action:**
-- Mind Measure staff document the decision in the audit log.
-- Secure email sent to the university's designated welfare contact.
-
-**What the university is told:**
-The notification is intentionally limited. The university welfare contact is told:
-> *"A student at your institution has been flagged by our wellbeing monitoring system as potentially needing support. We are not able to share identifying information, but we would recommend checking in with students who may be struggling at the moment."*
-
-We do not name the student unless:
-- The student has explicitly consented to disclosure, or
-- There is an imminent, specific risk to life (GDPR vital interests, Article 6(1)(d))
-
-**Legal basis:** GDPR Article 6(1)(d) — vital interests. This basis is documented in the DPA with each university. Universities are informed during onboarding that this pathway exists and what thresholds trigger it.
+**University notification:** Yes — see [University Notifications](#university-notifications) below.
 
 ---
 
-## Institutional Customisation
+### Level 5 — Real-Time Crisis (Explicit crisis disclosure during check-in)
 
-Each university can configure the following aspects of the hierarchy:
+> **Status: Not yet built. Critical priority.**
 
-### Resources (Levels 3+)
-Universities provide their own support contacts via the admin CMS:
-- `emergency_contacts` — wellbeing team name, phone number, hours
-- `mental_health_services` — counselling services, drop-in sessions
-- `wellbeing_support_url` — a link to their student wellbeing portal
+**Signal:** A student makes an explicit statement of intent to self-harm or end their life during a live Jodie check-in.
 
-These surface in welfare reflections (Level 3) and will surface in future in-app messaging.
+This is not a weekly-cycle event. It happens in real time, during a conversation.
 
-### Welfare contact (Level 5)
-Each university designates a welfare contact who receives Level 5 notifications. This is configured in `universities.mind_measure_contact` and `universities.mind_measure_email`.
+**When built, the system response will include:**
+- Immediate surfacing of crisis resources within the conversation (Samaritans 116 123, university emergency contact, 999)
+- Automated identified notification to the university's safeguarding contact within minutes
+- Level 5 notification marked high priority with additional urgency language: *"This student may be at immediate risk. We recommend urgent contact."*
+- Internal alert to Mind Measure staff
 
-### Thresholds *(not yet customisable — roadmap)*
-The score thresholds (< 40 for welfare week, < 25 for hold) are currently fixed. The roadmap includes allowing universities to adjust these within a permitted range, subject to clinical review.
+**Current gap:** Until this is built, Jodie's conversational guidance is the only in-session response. The weekly reflection hold is the closest existing detection mechanism, but it operates on a weekly cycle, not in real time. Building Level 5 is the highest priority technical item in this framework.
 
-### Tone and framing *(future)*
-Universities may eventually be able to influence the tone of welfare-level messaging — for example, a university with strong mental health branding may want resources presented in a specific way. This requires careful oversight and is not planned for the current build.
+---
+
+## University Notifications
+
+### Who receives notifications
+
+Each university designates a safeguarding contact during onboarding: a named individual with decision-making authority within their welfare or safeguarding team — not a generic departmental inbox.
+
+The `universities` table requires (pending migration):
+- `safeguarding_contact_name`
+- `safeguarding_contact_email`
+- `safeguarding_contact_phone`
+- `safeguarding_contact_role`
+
+These are mandatory at onboarding and must be refreshed annually.
+
+### What Level 4 notifications contain
+
+| Field | Content |
+|---|---|
+| Student name | Full name as registered |
+| University email | Institutional email address |
+| Trigger type | Which compound criterion was met |
+| Current week average | Numerical score |
+| Trend | Direction and duration (e.g. "declining over 3 weeks from 52 to 23") |
+| Date of most recent check-in | Timestamp |
+| Recommendation | "We recommend that your safeguarding team makes contact with this student as a priority." |
+
+**Not included:** Conversation transcripts. Specific things the student said to Jodie. Daily score breakdowns. Bedrock narrative content. The university gets enough to act, not enough to surveil.
+
+### Notification is mandatory
+
+University notification at Level 4 and 5 is a mandatory component of the data processing agreement, not an optional feature. Universities cannot disable the safety checking pipeline, opt out of receiving notifications, or request student identification at lower tiers.
+
+---
+
+## Consent and Transparency
+
+Students are presented with a dedicated consent screen during account creation — not buried in the privacy policy. A distinct screen presented before first check-in.
+
+Proposed onboarding copy:
+
+> *"Mind Measure keeps your data private. Your university cannot see your individual scores or what you talk about with Jodie. But your safety matters more than your data. If your Wellbeing Scores show sustained serious concern, or if you tell Jodie something that suggests you may be at risk, we will let your university's safeguarding team know your name and that you may need support. We will not share what you said. This is how the platform works. It is not optional, because a system that spots someone in trouble and does nothing is not a system worth building. If you are not comfortable with this, please do not create an account."*
+
+The student is not notified at the moment a Level 4 disclosure is made. The university's safeguarding team is responsible for making contact in a way that is sensitive and proportionate.
+
+---
+
+## Institutional Configuration
+
+Each university can configure:
+
+| Configuration | Status |
+|---|---|
+| Safeguarding contact (name, email, phone, role) | Needs dedicated fields added — mandatory at onboarding |
+| Wellbeing team resources (name, phone, hours) | Implemented via CMS — surfaces in Level 3 reflections |
+| Counselling services / wellbeing URL | Implemented via CMS — surfaces in Level 3 reflections |
+| Disclosure thresholds | Fixed — pending clinical review; adjustable within a permitted range on the roadmap |
+
+**What universities cannot configure:** Disabling the safety pipeline; accessing individual student data; opting out of Level 4/5 notifications; requesting student identification below Level 4.
 
 ---
 
 ## Editorial Guidelines by Level
 
-| Level | Tone | Length | Name usage | Resources |
-|---|---|---|---|---|
-| 0 — Thriving | Celebratory, grounded | Standard | Occasional | Contextual only |
-| 1 — Steady | Warm, observational | Standard | Occasional | Contextual only |
-| 2 — Harder week | Direct, honest, not alarming | Standard | Occasional | Contextual only |
-| 3 — Welfare | Honest, second-person, direct acknowledgement | Shorter | Name in opener | Buddy, university wellbeing, Student Minds |
-| 4 — Held | No email sent | — | — | — |
-| 5 — Notified | No email sent | — | — | — |
+| Level | Tone | Length | Resources |
+|---|---|---|---|
+| 0 — Thriving | Celebratory, grounded | Standard | Contextual only |
+| 1 — Steady | Warm, observational | Standard | Contextual only |
+| 2 — Harder week | Direct, honest, not alarming | Standard | Contextual only |
+| 3 — Welfare | Second-person, direct acknowledgement | Shorter | Buddy, university wellbeing, Student Minds |
+| 4 — Held | No email sent | — | — |
+| 5 — Real-time crisis | No email; in-session resources | — | Samaritans, 999, university emergency |
 
-**On using the student's name:**
-- Standard emails use the name in the header/subtitle and occasionally in section headers. The body uses "you"/"your".
-- Welfare emails open with the student's name directly: *"It's been a tough week, Amara."* This is intentional — it feels personal, not clinical.
-
-**On Samaritans:**
-Samaritans appears nowhere in automated student-facing communications. It is reserved for Level 5, where a human being is making the decision about what to share and with whom. Including it in automated emails risks normalising crisis-level framing for students who are having a difficult week but are not in crisis.
+**On Samaritans:** Appears nowhere in automated student-facing communications below Level 5. Including it in automated emails at Level 3 risks normalising crisis-level framing for students who are having a difficult week but are not in crisis. At Level 5, a human (or the in-session response system) surfaces it directly.
 
 ---
 
-## What is Not Yet Built
+## What Is Not Yet Built
 
-| Gap | Level affected | Status |
+| Gap | Level affected | Priority |
 |---|---|---|
-| Mid-week welfare nudge when Level 3/4 signals appear | 3, 4 | Roadmap — requires push notification infrastructure |
-| Tier 0 nudge (no check-ins for 7+ days) | 0 | Roadmap |
-| Internal Sentry alert when holds occur | 4 | Roadmap |
-| Automated Level 5 notification workflow | 5 | Pending clinical/legal sign-off |
-| Threshold customisation per university | 3, 4 | Roadmap — requires clinical advisor |
-| In-app real-time crisis response (during check-in) | 4, 5 | Roadmap |
+| Real-time crisis response during check-in | 5 | Critical |
+| Clinical validation of compound trigger thresholds | 4 | Critical |
+| Compound trigger engine (cross-week pattern evaluation) | 4 | High |
+| Automated Level 4 notification pipeline | 4 | High |
+| Post-notification review queue | 4 | High |
+| Student welfare record view (evidence retrieval) | 4, 5 | High |
+| Safeguarding contact fields in `universities` table | 4, 5 | High |
+| Onboarding consent screen | all | High |
+| Mid-week welfare nudge for Level 3/4 | 3, 4 | Medium |
+| Tier 0 nudge (no check-ins for 7+ days) | 0 | Medium |
+| Per-university threshold configuration | 3, 4 | Medium |
 
 ---
 
 ## Related Documentation
 
-- [Weekly Reflection](/operations/weekly-reflection) — full feature documentation
-- [Safeguarding Policy](/operations/weekly-reflection-safeguards) — technical implementation detail, audit trail, GDPR basis
+- [Wellbeing Protection Policy](/operations/wellbeing-protection-policy) — full policy document (philosophy, GDPR basis, scaling, evidence/audit, regulatory context)
+- [Weekly Reflection Safeguards](/operations/weekly-reflection-safeguards) — technical implementation detail and audit trail
 - [Operations Runbook](/operations/weekly-reflection-runbook) — manual triggers, investigating holds
