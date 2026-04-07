@@ -22,16 +22,24 @@ The Weekly Reflection sends AI-generated content to students who may be experien
 
 ## Tiered Response Framework
 
-| Tier | Signal | Action | University notified? |
-|---|---|---|---|
-| **0** | No check-ins for 7+ days | Gentle in-app/email nudge to student | No |
-| **1** | Single check-in score < 25 OR crisis keywords | In-app message + crisis resources to student; internal Mind Measure log | No (Mind Measure monitors) |
-| **2** | Pattern: 3+ check-ins all < 40 OR week avg < 35 | Modified welfare reflection + internal flag | Mind Measure reviews — may contact university |
-| **3** | Week avg < 25 OR explicit crisis language | Reflection held; internal alert to Mind Measure; university welfare contact notified | Yes — GDPR vital interests basis (Article 6(1)(d)) |
+The full editorial protocol is defined in the [Hierarchy of Help](/operations/hierarchy-of-help) document. The table below summarises the automated technical responses. Refer to the Hierarchy of Help for tone guidance, resource selection, and institutional customisation.
 
-**Tier 2 university notification is not automatic.** A Mind Measure staff member reviews the flag and decides whether to contact the university welfare contact. The student is informed before any institutional disclosure wherever safe to do so.
+| Level | Signal | Automated action | Email sent? | University notified? |
+|---|---|---|---|---|
+| **0** | Avg 70+ | Standard reflection | ✓ Standard | No |
+| **1** | Avg 50–69 | Standard reflection | ✓ Standard | No |
+| **2** | Avg 40–49 | Standard reflection (adjusted tone) | ✓ Standard | No |
+| **3** | All check-ins < 40 (min 3) | Welfare reflection | ✓ Welfare template | No (Mind Measure may review) |
+| **4** | Avg < 25 OR crisis language detected | Reflection held | ✗ Held | No (Mind Measure reviews within 24hrs) |
+| **5** | Level 4 hold reviewed and confirmed | No email | ✗ | Yes — welfare contact notified (GDPR vital interests) |
 
-**Tier 3 notification is automatic** and documented in the DPA with each university. This is the only circumstance where data is shared without student consent.
+**Level 3 (welfare week)** is sent automatically using the welfare template. The university wellbeing team's contact details are surfaced in the email. Samaritans is not included at this level — see [Hierarchy of Help](/operations/hierarchy-of-help) for the rationale.
+
+**Level 4** holds are logged but do not currently trigger an automated internal alert. A Sentry integration to alert Mind Measure staff is on the roadmap.
+
+**Level 5 notification is not automated.** A Mind Measure staff member reviews the hold, confirms the concern, and sends the university notification manually. The university is not told the student's name unless vital interests apply.
+
+**Note on Tier 0 (inactivity nudge):** A separate nudge for students who have not checked in for 7+ days is planned (roadmap). It is not part of the weekly reflection pipeline.
 
 ---
 
@@ -42,7 +50,7 @@ Every reflection passes through `runSafetyCheck()` before the email is dispatche
 ### Check 1: Score Threshold
 
 - If `avgScore < 25`: reflection is **held** (`send_type = 'held_safety'`), not sent.
-- This corresponds to Tier 3 — the student's week-average is in the Critical zone.
+- This corresponds to Level 4 — the student's week-average is in the deep Critical zone.
 - The hold is logged; no email is sent to the student.
 
 ### Check 2: Bedrock Safety Flag
@@ -64,12 +72,13 @@ no reason to live, worthless, hopeless, give up on life
 - If any keyword matches: reflection is **held** (`send_type = 'held_safety'`).
 - This catches cases where Bedrock does not set `safety_flag` but crisis language has appeared.
 
-### Welfare Week Detection
+### Welfare Week Detection (Level 3)
 
 - If all check-ins in the week score < 40 (minimum 3 check-ins): `isWelfareWeek = true`.
-- The reflection is still sent, but tagged as `send_type = 'welfare'`.
-- A modified welfare reflection template is used (warmer tone, university resources surfaced).
-- This corresponds to Tier 2.
+- The reflection is sent using the **welfare template** and tagged `send_type = 'welfare'`.
+- The welfare template uses second-person, direct tone; surfaces the university's wellbeing contacts and Student Minds; prompts the student to reach out to their buddy list.
+- **Samaritans is not included** — see [Hierarchy of Help](/operations/hierarchy-of-help) for the rationale.
+- This corresponds to Level 3 in the hierarchy.
 
 ---
 
