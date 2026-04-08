@@ -18,7 +18,7 @@ This document specifies the technical work required to implement the [Wellbeing 
 | 3 | Automated Level 4 notification pipeline (`sendSafeguardingDisclosure`) | ⏳ Blocked: clinical review + DPA sign-off + SES verified |
 | 4 | Disclosure post-notification review queue (write actions) | ⏳ Blocked: Phase 3 |
 | 5 | Onboarding consent screen (mobile apps) | ⏳ Blocked: legal sign-off, T&C update |
-| 6 | Per-student welfare timeline + PDF export | 📋 Planned |
+| 6 | Per-student welfare timeline + PDF export | ✅ Built & deployed |
 | 7 | Real-time Level 5 crisis response | 📋 Planned — ElevenLabs research required |
 
 ---
@@ -319,32 +319,43 @@ New screen in the account creation flow, presented after initial registration bu
 
 ---
 
-## Phase 6 — Per-Student Welfare Timeline + PDF Export
+## Phase 6 — Per-Student Welfare Timeline + PDF Export ✅ BUILT
 
-**Priority: High | No blocking dependency on clinical/legal — can be built any time**
+**Priority: High | Deployed | No blocking dependencies**
 
 Purpose-built evidence retrieval tool. Chronological timeline of all safety-relevant events for a given student. Exportable as a structured PDF. Suitable for a coroner's inquiry, subject access request, or institutional review.
 
-### API endpoint
+### What was built
 
-**File:** `mind-measure-core/api/welfare-record/[studentId].ts`
+**API:** `mind-measure-core/api/welfare-record/[studentId].ts`
 
 ```
-GET  /api/welfare-record/:studentId          — full welfare timeline
-GET  /api/welfare-record/:studentId/export   — PDF export
+GET /api/welfare-record/:studentId          — full welfare timeline (JSON)
+GET /api/welfare-record/:studentId?format=pdf — PDF download
 ```
 
-**Timeline events (all types merged, sorted chronologically):**
+Merges three data sources into a single chronological event stream:
 
-```typescript
-type WelfareEvent =
-  | { type: 'check_in';         date: string; score: number; safetyFlag: boolean }
-  | { type: 'reflection_sent';  date: string; sendType: string; promptVersion: string }
-  | { type: 'reflection_held';  date: string; holdReason: string; checkDetail: string }
-  | { type: 'disclosure';       date: string; triggerType: string; recipientEmail: string; reviewOutcome?: string }
+| Source | Event type | Fields |
+|---|---|---|
+| `fusion_outputs` | `check_in` | score, zone, risk level, safety flag, mood self-report, conversation summary |
+| `weekly_reflection_sends` | `reflection_sent` / `reflection_held` | send type, hold reason, Bedrock flag, week start |
+| `disclosure_notifications` | `disclosure` | trigger type, recipient, review outcome |
+
+**PDF generation** uses PDFKit (server-side, pure Node.js). Output is A4, colour-coded by score zone, with red highlighting for safety events and disclosures. Includes safeguarding consent date and confidentiality footer. Suitable for coroner's inquiry, subject access request, or OIA complaint response.
+
+**UI:** `mind-measure-core/src/components/superuser/WelfareTimeline.tsx`
+
+Slide-in panel accessible from two entry points:
+- "Timeline" button on each row in the Welfare Record → Trigger State table
+- "View timeline →" link on each Pending Review card
+
+Panel shows all events chronologically, check-in cards have expandable conversation summaries. "Export PDF" button in the header downloads the formatted document directly.
+
+**Deployment order note:**
 ```
-
-**PDF export:** Server-side only (e.g. `pdfkit`) — not client-side print. Date-ordered, all events with reasons.
+Phase 1a (DB) ✅ → Phase 6 ✅ (no dependency — reads existing tables)
+```
 
 ---
 
@@ -382,6 +393,7 @@ Same as Level 4, plus: indication that crisis-level content was detected during 
 Phase 1a (DB migration-017) ✅ DONE
 Phase 1b (Safeguarding contact UI) ✅ DONE
 Phase 1c (Welfare Record panel) ✅ DONE
+Phase 6 (Per-student timeline + PDF) ✅ DONE
     ↓
 Phase 2 (Compound trigger engine) ← WAIT: clinical threshold review
     ↓
@@ -391,15 +403,14 @@ Phase 4 (Review queue write actions) — extends existing Welfare Record panel
     ↓
 Phase 5 (Consent screen) ← WAIT: legal sign-off + T&C update
 
-Phase 6 (Per-student timeline + PDF) — can be built any time
 Phase 7 (Real-time L5) — parallel track, ElevenLabs research required
 ```
 
 **Can be started now (no external dependencies):**
-- Phase 6 — per-student welfare timeline and PDF export
+- Nothing — all non-blocked infrastructure is complete ✅
 
 **Start when clinical review done:**
-- Phase 2 — compound trigger engine (fix `weekly.ts` use-before-declaration bug first — see Phase 2 note above)
+- Phase 2 — compound trigger engine
 
 **Start when legal/DPA signed off:**
 - Phase 3 — automated notification pipeline
