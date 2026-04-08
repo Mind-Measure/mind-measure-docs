@@ -1,0 +1,175 @@
+# Wellbeing Protection Policy — Pro (Corporate)
+
+Employee safety, escalation protocols, and the case for a no-notification framework.
+
+> **Version:** 1.0 | April 2026  
+> **Status:** Draft — internal review  
+> **Owner:** Mind Measure Ltd
+
+---
+
+## 1. The Founding Principle
+
+The Pro product is a self-care tool for working adults. Its value depends entirely on honest engagement. An employee who fears that low scores will be reported to their employer will not engage honestly — and may not engage at all. That fear destroys the product.
+
+This policy therefore makes a deliberate and permanent commitment: **Mind Measure Pro will never notify an employer about an individual employee's wellbeing data.**
+
+This is not a gap in the framework. It is the framework.
+
+---
+
+## 2. Why the University Model Does Not Apply
+
+The University product includes an identified safeguarding disclosure pathway — automated notification to a university's named safeguarding officer when compound trigger thresholds are met. This makes sense in the university context for specific reasons:
+
+- Universities operate within a statutory safeguarding landscape (Equality Act 2010, UUK Suicide-Safer Universities Framework) that confers both duties and legitimacy on welfare intervention
+- The safeguarding officer is a named, trained professional with defined responsibilities — not a line manager or HR generalist
+- Students are often young adults living away from home for the first time, in an environment where the institution has a recognised role in loco parentis
+- The Northumbria precedent (OfS-funded analytics project) establishes consent-based welfare data use as accepted practice in the sector
+
+**None of these conditions apply in a corporate employment context.**
+
+An employer does not have a statutory safeguarding role in respect of employee mental health. An HR manager or line manager who receives a welfare notification has no defined protocol for responding to it, and the information immediately creates a power imbalance. The employee has not consented in any meaningful sense — consent given as a condition of employment is not freely given under GDPR. The ICO's guidance on employee health data processing is more restrictive than for other contexts, precisely because of this power dynamic.
+
+Disclosing individual employee wellbeing data to an employer — even with good intentions — would:
+- Breach GDPR Article 9 without defensible legal basis
+- Create potential grounds for discrimination claims
+- Destroy employee trust in the platform
+- Cause exactly the chilling effect on honest engagement that would make the platform worthless
+
+---
+
+## 3. What the Pro Framework Covers Instead
+
+The Pro Wellbeing Protection framework handles escalating concern entirely within the product and through signposting. The employer receives only anonymised, aggregated, population-level data — never individual employee data.
+
+### 3.1 Tiered Response Framework
+
+| Level | Name | Signal | Response |
+|---|---|---|---|
+| 0 | Baseline healthy | Score 60–100, no flags | Standard weekly reflection |
+| 1 | Early signals | Score 40–59 or mild themes | Supportive weekly reflection, wellbeing resources surfaced |
+| 2 | Sustained difficulty | Score 40–59 for 2+ weeks | Welfare weekly reflection, EAP resources prominently surfaced |
+| 3 | Acute concern | `risk_level: high` on any check-in, or score < 40 | Welfare reflection held; care-focused message sent; crisis resources surfaced in-app |
+| 4 | Compound concern | Two or more compound triggers met | Elevated in-app intervention (see §3.2); Jodie behaviour shift; no employer notification |
+| 5 | Crisis | Active crisis language in live check-in | Jodie surfaces crisis resources immediately; employee encouraged to call 999, Samaritans (116 123), or their EAP line |
+
+### 3.2 Level 4 — Compound Concern Response (No Notification)
+
+When compound trigger thresholds are met (see §3.4), the response is entirely within the product:
+
+**In-app:**
+- Elevated resource card displayed on the home screen — prominent, not buried
+- Direct links to EAP telephone line, Samaritans, and relevant self-help content
+- Nudge push notification (if enabled): "We've noticed you've had a tough few weeks. Here's some support."
+
+**Jodie behaviour:**
+- More frequent check-in prompting (if the employee has not checked in this week)
+- Conversation opens with a warmer, more explicitly supportive tone
+- More direct resource signposting within the conversation itself
+
+**Weekly reflection:**
+- Welfare template used — focuses on what support is available, not a summary of low scores
+- Reflection does not reference trigger criteria — framed as care, not surveillance
+
+**No employer action.** The employer's dashboard continues to show anonymised cohort data only. The individual employee's data is not surfaced, flagged, or otherwise brought to employer attention.
+
+### 3.3 Level 5 — Crisis Response
+
+During a live Jodie check-in where crisis content is detected (`risk_level: high`):
+
+1. Jodie's in-session guidance is the primary intervention — she is instructed to acknowledge the seriousness of what has been shared and provide immediate crisis resources
+2. The check-in result screen surfaces crisis resources before the score reveal:
+   - **999** — if in immediate danger
+   - **Samaritans: 116 123** — free, 24/7, anonymous
+   - **Campaign Against Living Miserably (CALM): 0800 58 58 58** — particularly relevant for male employees
+   - **Employee's EAP line** — configured per company (see §4.2)
+3. A push notification is sent: "We're here for you. If you're struggling, please reach out." — with crisis line links
+4. No employer notification. The session is flagged internally for Mind Measure's own audit trail only.
+
+### 3.4 Compound Trigger Thresholds
+
+The same four compound triggers used in the University product apply to Pro, with the same proposed thresholds pending clinical review:
+
+| Trigger | Proposed Threshold | Clinical Review Required |
+|---|---|---|
+| A — Sustained critical scores | Two consecutive weekly averages both below 25, ≥3 check-ins each | Yes |
+| B — Repeated crisis language | `risk_level: high` on 2+ check-ins within 7 days | Yes |
+| C — Score collapse | Current week avg ≤ trailing 4-week avg minus 40 points | Yes |
+| D — Sustained welfare pattern | 4+ welfare weekly reflections in any rolling 6-week window | Yes |
+
+See [Clinical Threshold Rationale](/operations/clinical-threshold-rationale) for the full clinical advisor briefing document. The same clinical sign-off applies to both products.
+
+---
+
+## 4. GDPR and Legal Basis
+
+### 4.1 Processing basis
+
+Without identified employer disclosure, the Pro GDPR position is straightforward:
+
+| Processing Activity | Article 6 Basis | Article 9 Condition |
+|---|---|---|
+| Daily check-in data collection and scoring | Explicit consent (Art 6(1)(a)) | Explicit consent (Art 9(2)(a)) |
+| Generating Weekly Reflection content | Legitimate interests (Art 6(1)(f)) | Explicit consent (Art 9(2)(a)) |
+| Safety audit trail | Legitimate interests (Art 6(1)(f)) | Substantial public interest (Art 9(2)(g)) / DPA Sch 1 para 18 |
+| Anonymised cohort data to employer dashboard | Legitimate interests (Art 6(1)(f)) | Not applicable — not individual health data |
+
+There is no identified disclosure to an employer — so the complex consent/substantial public interest layering required for the University product is not needed here. The employee consents to Mind Measure processing their data; that consent covers the platform's own response logic. No third party receives individual data.
+
+### 4.2 Employer's role
+
+The employer is a data controller only in respect of:
+- The anonymised, aggregated cohort data displayed on their dashboard
+- EAP contact details they provide to Mind Measure (for in-app display to employees)
+
+They are not a joint controller of individual employee wellbeing data. The DPA addendum between Mind Measure and each employer company should make this explicit.
+
+### 4.3 No consent screen for disclosure
+
+Because there is no identified employer disclosure pathway, the onboarding consent screen required for University (Phase 5 in the University tech spec) is not needed for Pro. Standard privacy policy acceptance at account creation is sufficient.
+
+---
+
+## 5. What Employers Do Receive
+
+Employers receive a company-level dashboard showing:
+
+- Network wellbeing score (anonymised aggregate)
+- Distribution across wellbeing zones (Thriving / Steady / Struggling / Critical) — cohort-level
+- Engagement rate (% of employees completing check-ins this week)
+- Top themes across the employee population (anonymised, aggregated)
+- Trend over time
+
+**Individual employee data is never surfaced to the employer dashboard.** This is a hard architectural constraint, not a configuration option.
+
+---
+
+## 6. EAP Integration
+
+Each company can configure their Employee Assistance Programme (EAP) contact details in the admin CMS:
+- EAP telephone number (displayed in-app at Levels 3–5)
+- EAP web portal URL
+- EAP provider name (for display copy)
+
+If no EAP is configured, national defaults are shown (Samaritans, CALM, NHS talking therapies).
+
+---
+
+## 7. What This Policy Does Not Cover
+
+- **Line manager conversations** — out of scope. Mind Measure does not facilitate or prompt manager-employee welfare conversations using individual data.
+- **Occupational health referrals** — out of scope. Mind Measure is not a referral pathway.
+- **Return-to-work planning** — out of scope. Mind Measure does not hold absence data.
+- **Performance management** — explicitly prohibited. Mind Measure data must not be used in performance review, disciplinary, or capability processes. This should be stated in the employer DPA addendum.
+
+---
+
+## 8. Open Questions for Legal Review
+
+| # | Question |
+|---|---|
+| 1 | Should the DPA addendum explicitly prohibit the employer from requesting individual employee data — even with employee consent? |
+| 2 | Is "legitimate interests" a sufficient basis for providing anonymised cohort data to the employer, given the employer-employee relationship? |
+| 3 | What is the appropriate retention period for employee check-in data? University is 36 months — does the same apply for Pro? |
+| 4 | Should employees have an explicit right to delete their data that goes beyond the standard GDPR erasure right — e.g. if they leave the company? |
