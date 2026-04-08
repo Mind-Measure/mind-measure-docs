@@ -2,35 +2,57 @@
 
 This document specifies the technical work required to implement the [Wellbeing Protection Policy v2.0](/operations/wellbeing-protection-policy). Changes are ordered by dependency: data layer first, automation second, UI third.
 
-> **Status:** Planning — pending clinical advisor threshold review and legal consent sign-off before Phases 2–3 are built  
+> **Status:** In progress — Phase 1 (DB + admin tooling) complete and deployed. Phases 2–5 pending clinical threshold review and legal/DPA sign-off.  
 > **Last updated:** April 2026
+
+---
+
+## Build Status
+
+| Phase | Description | Status |
+|---|---|---|
+| 1a | DB migration 017 — schema foundations | ✅ Built & deployed |
+| 1b | Safeguarding contact management — API + superuser UI | ✅ Built & deployed |
+| 1c | Welfare Record panel — compound trigger state + disclosure audit log | ✅ Built & deployed |
+| 2 | Compound trigger engine (`evaluateCompoundTriggers`) | ⏳ Blocked: clinical threshold review |
+| 3 | Automated Level 4 notification pipeline (`sendSafeguardingDisclosure`) | ⏳ Blocked: clinical review + DPA sign-off + SES verified |
+| 4 | Disclosure post-notification review queue (write actions) | ⏳ Blocked: Phase 3 |
+| 5 | Onboarding consent screen (mobile apps) | ⏳ Blocked: legal sign-off, T&C update |
+| 6 | Per-student welfare timeline + PDF export | 📋 Planned |
+| 7 | Real-time Level 5 crisis response | 📋 Planned — ElevenLabs research required |
 
 ---
 
 ## Prerequisites (Non-Technical)
 
-These must be completed before Phase 2 (compound trigger engine) can be built:
+These must be completed before later phases can be built:
 
 | Prerequisite | Owner | Blocks |
 |---|---|---|
 | Clinical advisor reviews compound trigger thresholds (A–D) | Keith | Phases 2, 3 |
-| Legal confirms consent model is freely given and defensible | Legal | Phase 6 |
+| Legal confirms consent model is freely given and defensible | Legal | Phase 5 |
 | DPA addendum drafted covering L4/5 notification pathway | Legal | Phase 3 |
-| T&Cs updated with safeguarding clause and compound trigger criteria | Keith / Legal | Phase 6 |
-| Privacy policy updated with disclosure triggers and data categories | Keith / Legal | Phase 6 |
+| T&Cs updated with safeguarding clause and compound trigger criteria | Keith / Legal | Phase 5 |
+| Privacy policy updated with disclosure triggers and data categories | Keith / Legal | Phase 5 |
 | `safeguarding@mindmeasure.co.uk` created and SES verified | Keith / DevOps | Phase 3 |
 
 ---
 
-## Phase 1 — Database Foundations
+## Phase 1a — Database Foundations ✅ BUILT
 
-**Priority: High | Deployable independently | No prerequisites**
+**Priority: High | Deployed | Migration: `run-migration-017`**
 
 All subsequent phases depend on this. Additive schema changes with no breaking impact on existing code.
 
-### Migration: `migration-018-safeguarding-fields`
+### What was built
 
-Run against the production Aurora database.
+**API file:** `mind-measure-core/api/admin/run-migration-017.ts`
+
+Run via `POST /api/admin/run-migration-017` (superadmin auth required). Safe to call multiple times — all statements use `IF NOT EXISTS`.
+
+**Allowlist update:** `mind-measure-core/api/database/select.ts` — added `disclosure_notifications` and `welfare_trigger_state` to `ALLOWED_TABLES`.
+
+### Schema changes
 
 ```sql
 -- Safeguarding contact fields on universities
@@ -40,21 +62,27 @@ ALTER TABLE universities
   ADD COLUMN IF NOT EXISTS safeguarding_contact_phone VARCHAR(50),
   ADD COLUMN IF NOT EXISTS safeguarding_contact_role  VARCHAR(255);
 
+-- Safeguarding consent fields on profiles
+-- (Moved forward from Phase 5 — simpler to run in one migration)
+ALTER TABLE profiles
+  ADD COLUMN IF NOT EXISTS safeguarding_consent_given_at  TIMESTAMPTZ,
+  ADD COLUMN IF NOT EXISTS safeguarding_consent_version   TEXT;
+
 -- Disclosure notification log
 CREATE TABLE IF NOT EXISTS disclosure_notifications (
-  id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  student_id        UUID NOT NULL REFERENCES profiles(id),
-  university_id     UUID NOT NULL REFERENCES universities(id),
-  trigger_type      TEXT NOT NULL, -- 'sustained_critical' | 'repeated_crisis_language' | 'score_collapse' | 'sustained_welfare_pattern'
-  trigger_detail    JSONB NOT NULL DEFAULT '{}', -- specific values that met the criterion
-  score_data        JSONB NOT NULL DEFAULT '{}', -- current_avg, trailing_avg, trend
-  recipient_name    TEXT,
-  recipient_email   TEXT NOT NULL,
-  sent_at           TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  reviewed_at       TIMESTAMPTZ,
-  reviewer_id       TEXT, -- superuser identifier
-  review_outcome    TEXT, -- 'confirmed' | 'false_positive' | 'additional_action'
-  review_notes      TEXT
+  id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  student_id       UUID NOT NULL,
+  university_id    UUID NOT NULL,
+  trigger_type     TEXT NOT NULL,
+  trigger_detail   JSONB NOT NULL DEFAULT '{}',
+  score_data       JSONB NOT NULL DEFAULT '{}',
+  recipient_name   TEXT,
+  recipient_email  TEXT NOT NULL,
+  sent_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  reviewed_at      TIMESTAMPTZ,
+  reviewer_id      TEXT,
+  review_outcome   TEXT CHECK (review_outcome IN ('confirmed', 'false_positive', 'additional_action')),
+  review_notes     TEXT
 );
 
 CREATE INDEX IF NOT EXISTS idx_disclosure_notifications_student
@@ -64,33 +92,93 @@ CREATE INDEX IF NOT EXISTS idx_disclosure_notifications_university
   ON disclosure_notifications (university_id, sent_at DESC);
 
 CREATE INDEX IF NOT EXISTS idx_disclosure_notifications_pending_review
-  ON disclosure_notifications (reviewed_at)
-  WHERE reviewed_at IS NULL;
+  ON disclosure_notifications (sent_at) WHERE reviewed_at IS NULL;
 
--- Welfare trigger state (per-student rolling window data)
+-- Welfare trigger state — per-student rolling window counters
 CREATE TABLE IF NOT EXISTS welfare_trigger_state (
-  student_id              UUID PRIMARY KEY REFERENCES profiles(id),
-  consecutive_critical_weeks  INT NOT NULL DEFAULT 0,
-  crisis_flags_7day_window    INT NOT NULL DEFAULT 0,
+  student_id                  UUID        PRIMARY KEY,
+  consecutive_critical_weeks  INT         NOT NULL DEFAULT 0,
+  crisis_flags_7day_window    INT         NOT NULL DEFAULT 0,
   crisis_flags_window_start   DATE,
-  welfare_weeks_6wk_window    INT NOT NULL DEFAULT 0,
-  trailing_4wk_avg        NUMERIC(5,2),
-  last_evaluated_week     DATE,
-  updated_at              TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  welfare_weeks_6wk_window    INT         NOT NULL DEFAULT 0,
+  trailing_4wk_avg            NUMERIC(5,2),
+  last_evaluated_week         DATE,
+  updated_at                  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 ```
 
-**Files to create/modify:**
-- `mind-measure-core/api/migrations/018-safeguarding-fields.sql` — the migration above
-- `mind-measure-core/api/migrations/run.ts` — confirm new migration is included in the runner
+**Verification:** Run `POST /api/admin/run-migration-017` from the superuser panel → System tab. Confirm 200 OK. In Aurora, verify `\d universities` shows new columns, and both new tables exist.
 
-**Verification:** After migration, confirm all new tables and columns exist in production. Run `\d universities`, `\d disclosure_notifications`, `\d welfare_trigger_state` via psql.
+---
+
+## Phase 1b — Safeguarding Contact Management ✅ BUILT
+
+**Priority: High | Deployed | No prerequisites**
+
+Allows superadmins to configure the named safeguarding contact at each university — the individual who will receive Level 4 automated disclosures.
+
+### What was built
+
+**API:** `mind-measure-core/api/universities/update-safeguarding.ts`
+
+```
+POST /api/universities/update-safeguarding
+```
+
+Body: `{ universityId, name, email, phone?, role? }` — Zod-validated. Updates four `safeguarding_contact_*` columns on the `universities` row.
+
+**UI:** `mind-measure-core/src/components/superuser/SafeguardingContactPanel.tsx`
+
+Inline expandable panel on each university card in the superuser panel → Universities tab. A `ShieldAlert` icon button is shown on every card:
+- **Amber** — contact not yet configured (warning state)
+- **Teal** — contact is configured
+
+Clicking the button expands a four-field form (name, email, phone, role) that saves without navigating away. After saving, the card state updates in memory without a full reload.
+
+**Important:** Until a university's safeguarding contact is configured, Level 4 automated notifications will fall back to `universities.mind_measure_email` — but this produces a Sentry alert flagging the misconfiguration.
+
+---
+
+## Phase 1c — Welfare Record Audit Panel ✅ BUILT
+
+**Priority: High | Deployed | Depends on Phase 1a schema (tables exist, but will be empty until Phase 2 runs)**
+
+Superuser visibility into compound trigger state and all disclosure notifications. Read-only until Phase 3 adds post-notification review write actions.
+
+### What was built
+
+**API:** `mind-measure-core/api/welfare-record/index.ts`
+
+```
+GET /api/welfare-record?tab=pending&page=1&limit=25
+GET /api/welfare-record?tab=triggers
+GET /api/welfare-record?tab=disclosures
+GET /api/welfare-record?tab=disclosures&universityId=<uuid>
+```
+
+Three data views in one endpoint, all paginated:
+
+| Tab | Returns |
+|---|---|
+| `pending` | Unreviewed disclosures, ordered by sent time ASC — hours overdue flag included |
+| `triggers` | Per-student welfare trigger state with active/clear status |
+| `disclosures` | Full disclosure history with review outcomes |
+
+**UI:** `mind-measure-core/src/components/superuser/WelfareRecord.tsx`
+
+New "Welfare Record" tab in the superuser control panel (visible to superadmins only, shown next to Wellbeing Sends). Three sub-tabs:
+
+- **Pending review** — red badge on tab when items are overdue past the 24hr SLA
+- **Trigger state** — colour-coded table, counter values turn red when at or above threshold
+- **All disclosures** — full audit log with review outcome badges
+
+> The tables will be empty until Phase 2 (compound trigger engine) is built and running. The UI handles the empty state gracefully.
 
 ---
 
 ## Phase 2 — Compound Trigger Engine
 
-**Priority: High | Deployable independently after Phase 1 | Blocked by: clinical threshold review**
+**Priority: High | Blocked by: clinical threshold review**
 
 New logic runs within the weekly reflection pipeline, after `runSafetyCheck()`. Evaluates all four compound triggers using per-student historical data.
 
@@ -134,7 +222,7 @@ Query `weekly_reflection_sends` for `send_type = 'welfare'` in the 6-week rollin
 
 ## Phase 3 — Automated Level 4 Notification Pipeline
 
-**Priority: High | Blocked by: Phase 1, Phase 2, clinical review, DPA sign-off, SES verified identity**
+**Priority: High | Blocked by: Phase 2, clinical review, DPA sign-off, SES verified identity**
 
 When `evaluateCompoundTriggers()` returns `triggered: true`, call `sendSafeguardingDisclosure()`.
 
@@ -167,107 +255,96 @@ async function sendSafeguardingDisclosure(
 
 ---
 
-## Phase 4 — Post-Notification Review Queue
+## Phase 4 — Disclosure Post-Notification Review Queue
 
 **Priority: High | Blocked by: Phase 3**
 
-Superuser panel view for reviewing every automated Level 4 disclosure. Staff confirm trigger was correctly met, flag false positives, log review outcome.
+Superuser panel view for reviewing every automated Level 4 disclosure. Builds on the read-only Welfare Record panel (Phase 1c) by adding write actions — staff confirm trigger was correctly met, flag false positives, log review outcome.
 
-### API endpoints
+### API endpoint
 
 **File:** `mind-measure-core/api/disclosures/review.ts`
 
 ```
-GET  /api/disclosures/review          — list pending (unreviewed) disclosures
-GET  /api/disclosures/review/:id      — single disclosure detail
-POST /api/disclosures/review/:id      — submit review (outcome, notes)
+POST /api/disclosures/review/:id   — submit review outcome (outcome, notes)
 ```
 
-**Auth:** Requires `superuser` JWT. Review write requires a designated `welfare_review` permission (new permission type).
+**Auth:** Requires superuser JWT.
 
-**Response shape for list:**
+**Body:**
 
 ```typescript
-interface DisclosureReviewItem {
-  id: string;
-  studentName: string;
-  universityName: string;
-  triggerType: string;
-  triggerDetail: Record<string, unknown>;
-  scoreData: Record<string, unknown>;
-  recipientEmail: string;
-  sentAt: string;
-  hoursUntilSLABreach: number; // 24hr SLA
+interface ReviewSubmission {
+  outcome: 'confirmed' | 'false_positive' | 'additional_action';
+  notes?: string;
 }
 ```
 
-### UI component
+### UI changes
 
-**File:** `mind-measure-core/src/components/superuser/DisclosureReview.tsx`
+**File:** `mind-measure-core/src/components/superuser/WelfareRecord.tsx` (extend existing component)
 
-- List of pending reviews, sorted by SLA breach time (most urgent first)
-- Review form: confirm trigger was correctly met (Y/N), notification sent to correct contact (Y/N), additional action needed (Y/N/notes)
-- `review_outcome` options: `confirmed` / `false_positive` / `additional_action`
-- False positives flagged and visible in aggregate for threshold refinement
+Add review form to the **Pending review** sub-tab. Each pending disclosure card gains a review button that expands an inline form:
+- outcome radio (confirmed / false positive / additional action)
+- notes textarea (required if additional_action)
+- Submit — calls `POST /api/disclosures/review/:id`, updates card state inline
+
+False positives accumulate and will be visible in aggregate for threshold calibration.
 
 ---
 
-## Phase 5 — Student Welfare Record View
+## Phase 5 — Onboarding Consent Screen
 
-**Priority: High | Blocked by: Phase 1 | Can be built in parallel with Phases 3–4**
+**Priority: High | Blocked by: T&C update, legal sign-off | University mobile app only in this sprint**
 
-Purpose-built evidence retrieval tool. Chronological timeline of all safety-relevant events for a given student. Exportable as a structured PDF. Access restricted to a designated legal/compliance role.
+New screen in the account creation flow, presented after initial registration but before first check-in. Dedicated screen — separate from the existing privacy policy acceptance step.
+
+> **Note:** The consent columns (`safeguarding_consent_given_at`, `safeguarding_consent_version`) were added to `profiles` in migration-017 (Phase 1a), so no further migration is needed.
+
+**Files (university first):**
+- `mind-measure-mobile-final/src/components/SafeguardingConsentScreen.tsx`
+
+**Screen behaviour:**
+- Displays the onboarding copy (see §4.1 of the policy)
+- Single button: "I understand — continue"
+- No opt-out path. The copy explains this directly.
+- On confirmation: `PATCH /api/profiles/consent` — writes `safeguarding_consent_given_at = NOW()` and `safeguarding_consent_version = '<T&C version string>'`
+- Consent cannot be bypassed — the check-in flow is blocked until this screen is completed
+
+**State machine change (`MobileAppStructure.tsx`):**
+- Add `'safeguardingConsent'` to the `OnboardingScreen` union type
+- After account creation, before `'firstCheckIn'`, check `safeguarding_consent_given_at` on the profile
+- If null: route to `'safeguardingConsent'` screen
+- Pro product consent screen is a **separate design track** — different framing, different legal basis
+
+---
+
+## Phase 6 — Per-Student Welfare Timeline + PDF Export
+
+**Priority: High | No blocking dependency on clinical/legal — can be built any time**
+
+Purpose-built evidence retrieval tool. Chronological timeline of all safety-relevant events for a given student. Exportable as a structured PDF. Suitable for a coroner's inquiry, subject access request, or institutional review.
 
 ### API endpoint
 
 **File:** `mind-measure-core/api/welfare-record/[studentId].ts`
 
 ```
-GET  /api/welfare-record/:studentId   — full welfare timeline for student
-GET  /api/welfare-record/:studentId/export — PDF export
+GET  /api/welfare-record/:studentId          — full welfare timeline
+GET  /api/welfare-record/:studentId/export   — PDF export
 ```
 
-**Auth:** Requires `welfare_evidence` permission (new superuser permission type — not granted to all superusers).
-
-**Timeline events (chronological, all types merged):**
+**Timeline events (all types merged, sorted chronologically):**
 
 ```typescript
 type WelfareEvent =
-  | { type: 'check_in'; date: string; score: number; safetyFlag: boolean }
-  | { type: 'reflection_sent'; date: string; sendType: string; promptVersion: string }
-  | { type: 'reflection_held'; date: string; holdReason: string; checkDetail: string }
-  | { type: 'disclosure'; date: string; triggerType: string; recipientEmail: string; reviewOutcome?: string }
+  | { type: 'check_in';         date: string; score: number; safetyFlag: boolean }
+  | { type: 'reflection_sent';  date: string; sendType: string; promptVersion: string }
+  | { type: 'reflection_held';  date: string; holdReason: string; checkDetail: string }
+  | { type: 'disclosure';       date: string; triggerType: string; recipientEmail: string; reviewOutcome?: string }
 ```
 
-**PDF export:** Structured, date-ordered, all events with reasons. Suitable for coroner's inquiry or subject access request. Use a server-side PDF library (e.g. `pdfkit`) — not client-side print.
-
----
-
-## Phase 6 — Onboarding Consent Screen
-
-**Priority: High | Blocked by: T&C update, legal sign-off | Applies to both university and pro mobile apps**
-
-New screen in the account creation flow, presented after initial registration but before first check-in. Dedicated screen — separate from the existing privacy policy acceptance step.
-
-**Files:**
-- `mind-measure-mobile-final/src/components/SafeguardingConsentScreen.tsx`
-- `mind-measure-pro-mobile/src/components/SafeguardingConsentScreen.tsx`
-
-**Screen behaviour:**
-- Displays the onboarding copy (see §4.1 of the policy)
-- Single button: "I understand — continue"
-- No opt-out path. The copy explains this directly.
-- On confirmation: write `safeguarding_consent_given_at` and `safeguarding_consent_version` to the student's profile
-- Consent cannot be bypassed — the check-in flow is blocked until this screen is completed
-
-**Database:**
-
-```sql
--- Add to profiles table
-ALTER TABLE profiles
-  ADD COLUMN IF NOT EXISTS safeguarding_consent_given_at  TIMESTAMPTZ,
-  ADD COLUMN IF NOT EXISTS safeguarding_consent_version   TEXT; -- links to T&C version in effect at time of consent
-```
+**PDF export:** Server-side only (e.g. `pdfkit`) — not client-side print. Date-ordered, all events with reasons.
 
 ---
 
@@ -302,27 +379,28 @@ Same as Level 4, plus: indication that crisis-level content was detected during 
 ## Deployment Order
 
 ```
-Phase 1 (DB)
+Phase 1a (DB migration-017) ✅ DONE
+Phase 1b (Safeguarding contact UI) ✅ DONE
+Phase 1c (Welfare Record panel) ✅ DONE
     ↓
-Phase 2 (Trigger engine) — requires clinical review ← WAIT
-Phase 5 (Welfare record view) — can be built in parallel ←— no clinical dep
+Phase 2 (Compound trigger engine) ← WAIT: clinical threshold review
     ↓
-Phase 3 (Automated notification) — requires legal/DPA sign-off ← WAIT
+Phase 3 (Automated notification pipeline) ← WAIT: DPA sign-off + SES
     ↓
-Phase 4 (Review queue)
+Phase 4 (Review queue write actions) — extends existing Welfare Record panel
     ↓
-Phase 6 (Consent screen) — requires legal sign-off ← WAIT
-    ↓
-Phase 7 (Real-time L5) — requires ElevenLabs research ← parallel track
+Phase 5 (Consent screen) ← WAIT: legal sign-off + T&C update
+
+Phase 6 (Per-student timeline + PDF) — can be built any time
+Phase 7 (Real-time L5) — parallel track, ElevenLabs research required
 ```
 
-**Start now (no external dependencies):**
-- Phase 1 — DB migration
-- Phase 5 — Student welfare record view
+**Can be started now (no external dependencies):**
+- Phase 6 — per-student welfare timeline and PDF export
 
 **Start when clinical review done:**
-- Phase 2 — Compound trigger engine
+- Phase 2 — compound trigger engine (fix `weekly.ts` use-before-declaration bug first — see Phase 2 note above)
 
 **Start when legal/DPA signed off:**
-- Phase 3 — Automated notification pipeline
-- Phase 6 — Onboarding consent screen
+- Phase 3 — automated notification pipeline
+- Phase 5 — onboarding consent screen
