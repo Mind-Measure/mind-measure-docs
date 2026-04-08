@@ -1,0 +1,202 @@
+# Clinical Threshold Rationale
+
+> **Purpose:** To provide clinical advisors with a clear account of how the Wellbeing Score is constructed, what the safeguarding thresholds represent, and the reasoning behind each proposed trigger value. This document frames the questions Mind Measure wants clinical input on.
+>
+> **Status:** Draft for clinical advisor review — April 2026
+> **Owner:** Mind Measure Ltd
+
+---
+
+## 1. What the Wellbeing Score Is — and Isn't
+
+Before reviewing the thresholds, a clinical advisor needs to understand what they are actually thresholds *of*.
+
+### 1.1 The score is an AI-synthesised signal, not a clinical measure
+
+The Mind Measure Wellbeing Score (0–100) is produced by fusing three input streams after each conversational check-in with Jodie:
+
+| Input | Weight | Source |
+|---|---|---|
+| Text analysis | 70% | Claude 3.7 Sonnet (AWS Bedrock) reads the conversation transcript and returns a 0–100 wellness score based on language tone, sentiment, and wellness indicators |
+| Voice analysis | 15% | Client-side Web Audio API extracts pitch, speaking rate, jitter, shimmer and other acoustic features |
+| Facial analysis | 15% | AWS Rekognition extracts smile frequency, eye contact, blink rate, and facial tension from the video frame |
+
+**The score is not a validated clinical instrument.** It is not PHQ-9, GAD-7, or any recognised psychometric tool. It is an AI-derived signal that correlates with self-reported wellbeing, designed to be sensitive to change over time rather than to provide an absolute clinical classification.
+
+### 1.2 What the text score is measuring
+
+The 70% text component is the most clinically meaningful part of the score. Claude is instructed to look for:
+
+| Signal type | Examples | Direction |
+|---|---|---|
+| Positive language | "productive", "happy", "good day" | Score increases |
+| Negative language | "stressed", "anxious", "exhausted" | Score decreases |
+| Coping statements | "I'm managing", "getting through it" | Score increases |
+| Hopelessness markers | "nothing helps", "can't cope", "no point" | Score decreases significantly |
+| Social connection | mentions of friends, family, support | Score increases |
+| Isolation markers | "alone", "no one understands" | Score decreases |
+| Sleep problems | difficulty sleeping, waking early | Score decreases |
+| Physical activity | mentions of exercise, walking | Score increases |
+
+Claude also returns a `risk_level` field — independently of the numeric score — that can be: `none`, `mild`, `moderate`, or `high`. A `risk_level` of `high` means Claude detected explicit crisis indicators: self-harm language, suicidal ideation, or active expressions of wanting to die.
+
+### 1.3 Score bands and their practical meaning
+
+Based on the V2 scoring weights and Claude's calibration, the bands correspond approximately to the following observable patterns. **These descriptions are Mind Measure's interpretation, not externally validated clinical definitions.**
+
+| Band | Score | What a student in this band typically expresses |
+|---|---|---|
+| Thriving | 80–100 | Positive affect, engagement with daily life, social connection, forward-looking language. Energy and motivation present. |
+| Steady | 60–79 | Generally coping. Mix of positive and negative. Normal life stress. No persistent negative themes. |
+| Struggling | 40–59 | Recurring negative themes (sleep, isolation, academic pressure). Language suggests difficulty but not hopelessness. Often still engaging with Jodie. |
+| Low | 20–39 | Predominantly negative language. Hopelessness markers present. Reduced engagement. Flat vocal affect. May express feeling stuck or without support. |
+| Critical | 0–19 | Severe negative affect. Multiple hopelessness and isolation markers. Often low engagement with conversation. Claude may flag `risk_level: moderate` or `high`. |
+
+### 1.4 Relationship to validated scales
+
+The baseline assessment (taken at account creation) uses PHQ-2 and GAD-2, which are validated instruments. A PHQ-2 score ≥3 signals possible depression; GAD-2 ≥3 signals possible anxiety. These feed into the clinical score at baseline (70% weight) and establish a starting reference point.
+
+Daily check-in scores are not calibrated against PHQ-2 or PHQ-9. A student scoring 25 on a check-in has not been screened for depression. The check-in score is a *change-detection signal* — it is most useful when compared to that student's own history, not against a population norm.
+
+**This is a key limitation the clinical advisor should note and advise on.**
+
+---
+
+## 2. The Four Compound Triggers — Rationale and Questions
+
+The safeguarding thresholds are designed to fire when a *pattern* is established, not on a single data point. Each trigger requires multiple signals over time. The reasoning is deliberately conservative: the cost of a false positive (contacting the university when no intervention is needed) is high enough that single-point triggers were rejected.
+
+---
+
+### Trigger A — Sustained critical scores
+
+**Proposed threshold:** Two consecutive weekly averages both below 25, each week having at least three completed check-ins.
+
+**What it is attempting to capture:**  
+A student who has been in the lowest wellbeing band for two full weeks and has not recovered. Not a student having a bad day or a bad week — a student showing persistent, non-transient low wellbeing over a minimum 14-day period.
+
+**Why the value of 25:**  
+A score below 25 places the student in the lower half of the "Low wellbeing" band (20–39). To reach a weekly average below 25, the majority of that student's check-ins must contain sustained negative indicators — hopelessness markers, isolation language, flat vocal affect, reduced facial engagement. A student scoring in the 25–40 range is struggling but the signal is less consistent. A student averaging below 25 for two weeks is showing something more persistent.
+
+The requirement for ≥3 check-ins per week is a data quality gate: a two-check-in average of 20 might reflect one very bad day rather than a sustained state. Three or more check-ins in a week provides a more reliable picture of that week's average state.
+
+**What is not validated:**  
+The specific cutoff of 25 (as opposed to 30, 20, or a different value) has not been empirically tested. There is no population-level data yet on what percentage of students fall below this threshold in any given week, or what proportion of those students have a clinical need that warrants contact.
+
+**Questions for the clinical advisor:**
+- Is two consecutive weeks an appropriate window, or should it be three?
+- Is 25 an appropriate cutoff given the scoring methodology, or would a different value capture the clinical population of concern more precisely?
+- Should a minimum baseline PHQ-2 score be required for this trigger to be active (i.e., only students who already screened positive at baseline)?
+
+---
+
+### Trigger B — Repeated crisis language
+
+**Proposed threshold:** Claude's `risk_level` field returns `high` on two or more separate check-ins within any 7-day window.
+
+**What it is attempting to capture:**  
+A student whose language contains explicit crisis content on multiple occasions within a short period. Not a student who mentions feeling low or hopeless — those would produce moderate scores, not a `risk_level: high` flag. A `high` flag means Claude detected content associated with suicidal ideation, self-harm references, or expressions of wanting to die.
+
+**Why this trigger is different:**  
+Trigger B is not a score-based trigger. It fires on the *content* of the conversation, independently of the numeric score. A student could score 45 (mid-range Struggling) but still trigger this if their language contains crisis content — because the score averaging effect can obscure the severity of individual statements within a conversation.
+
+**Why two occurrences:**  
+A single `risk_level: high` detection is already handled by the existing Level 3 response (welfare hold on the weekly reflection, care-focused messaging). The compound trigger fires when this pattern recurs within 7 days — indicating that the crisis content is not a one-off expression but a recurring theme, which is a qualitatively different situation.
+
+**What is not validated:**  
+Claude's crisis detection accuracy is not independently validated. The model is trained on general English text and follows a prompt instruction to flag crisis indicators. It may miss context-dependent expressions ("I want to kill this assignment"), and the false positive rate for `risk_level: high` in a student population is not known. This trigger is only as reliable as Claude's detection capability.
+
+**Questions for the clinical advisor:**
+- Is two occurrences within 7 days the right threshold, or is a single occurrence sufficient to warrant a university notification?
+- Should `risk_level: moderate` (persistent negative mood, significant struggles) also count toward this trigger if repeated?
+- How should Mind Measure handle the known limitation of LLM crisis detection? Should human review of the conversation summary be required before a notification fires?
+
+---
+
+### Trigger C — Score collapse
+
+**Proposed threshold:** Current week's average score ≤ the trailing 4-week average minus 40 points.
+
+**What it is attempting to capture:**  
+A sudden, large deterioration in a student's wellbeing relative to their own recent baseline. A student who has been steady at 65 and drops to 20 in a single week. This is distinct from a student who has always scored low — it captures a trajectory *change*, not an absolute level.
+
+**Why 40 points:**  
+A 40-point drop is substantial. The full score range is 0–100. A drop of 40 means moving from, for example, the top of the Struggling band (59) to the Critical band (19), or from Good (65) to Critical (25). It represents a qualitative change in expressed wellbeing, not a gradual drift.
+
+Smaller drops (10–20 points) are common week-to-week variation. A 25-point drop is notable but could reflect a bad exam period, a relationship difficulty, or simply a lower-quality recording session. A 40-point drop is sufficiently large that it is unlikely to be explained by measurement noise alone.
+
+**What is not validated:**  
+The 40-point threshold was chosen judgementally. Population data on week-to-week score variation in students is not yet available. Without knowing the typical standard deviation of weekly averages, it is not possible to say whether a 40-point drop represents a 2-sigma or 3-sigma event in the student population.
+
+**Questions for the clinical advisor:**
+- Is an absolute point-difference threshold the right approach, or should this be a percentage change (e.g., ≥50% decrease)?
+- Should the score also need to cross into a specific band (e.g., must end below 30) for this trigger to fire, rather than purely measuring the size of the drop?
+- Should the trigger require the collapse to be sustained (e.g., also confirmed the following week) rather than firing on a single-week collapse?
+
+---
+
+### Trigger D — Sustained welfare pattern
+
+**Proposed threshold:** Four or more weekly reflections of type `welfare` within any rolling 6-week window.
+
+**What it is attempting to capture:**  
+The weekly reflection pipeline categorises each week's reflection as either `standard` or `welfare`. A `welfare` reflection is sent when the safety check (`runSafetyCheck()`) determines that the student's week warrants a more supportive, care-focused message rather than a normal summary. This happens when scores are low enough or the safety check flags specific concern patterns.
+
+Four `welfare` reflections in six weeks means the student has been in a state of sufficient concern to trigger the care pathway in the majority of recent weeks. It is a direct measure of how often the platform has already recognised this student as requiring elevated care — and found that the situation has not resolved.
+
+**Why this trigger is meaningful:**  
+Unlike the score-based triggers, this trigger operates on the platform's own prior clinical judgements. A student who has triggered `welfare` reflections in 4 out of 6 weeks is a student the system has already identified as struggling repeatedly. The Level 4 trigger asks: at what point does a pattern of individual welfare weeks constitute a pattern that warrants institutional contact?
+
+**Why four out of six:**  
+Six weeks is long enough to distinguish a temporary period of difficulty (exam stress, a bereavement) from a persistent welfare state. Four out of six (67%) means the student has been in a welfare state more often than not across that period. Three out of six felt too low — three welfare weeks in six could reflect two separate stressful events. Five out of six felt too high — a student would need to be almost permanently in a welfare state before triggering contact.
+
+**What is not validated:**  
+The `welfare` classification threshold in `runSafetyCheck()` is itself a design choice, not a validated clinical threshold. The sensitivity of this trigger depends entirely on how generously or conservatively `runSafetyCheck()` assigns `welfare` type, which is a separate question from the 4/6 compound threshold.
+
+**Questions for the clinical advisor:**
+- Is 4 out of 6 weeks the right ratio, or should it be 3 out of 5 (more sensitive) or 5 out of 7 (more specific)?
+- Should this trigger require that the welfare weeks be *recent* (e.g., including the last 2 weeks), rather than just any 4 in 6?
+
+---
+
+## 3. What a Validated Threshold Would Require
+
+For Mind Measure to be confident these thresholds are clinically appropriate, the following would need to be true:
+
+1. **Population prevalence known:** What percentage of active students in any given month fall below each threshold? If Trigger A (two weeks below 25) fires for 20% of students, the threshold is too low. If it fires for 0.1%, it may be missing students who need contact.
+
+2. **Outcome data available:** Of the students who crossed each threshold, what proportion were subsequently identified by their university as having a clinical welfare need? This requires follow-up data from partner institutions.
+
+3. **False positive rate acceptable:** Of institutional contacts made, how often was the contact assessed by the university as not warranted?
+
+4. **Discrimination tested:** Are the compound triggers better at identifying students with genuine welfare needs than simpler heuristics (e.g., just any single score below 30)?
+
+None of this data is available yet. Mind Measure is in its first full deployment year. The thresholds described in this document are *starting proposals* — they are conservative by design, intended to err on the side of fewer contacts rather than more, until population data allows calibration.
+
+---
+
+## 4. Questions We Are Asking the Clinical Advisor
+
+A concise list of the specific sign-off questions:
+
+| # | Question | Relates to |
+|---|---|---|
+| 1 | Are the four compound trigger types the right categories of concern, or are we missing an important pattern? | Trigger design |
+| 2 | Is "two consecutive weeks below 25" the right Trigger A threshold? | Trigger A |
+| 3 | Should `risk_level: high` on a single check-in be sufficient for institutional notification, or is two-in-seven-days appropriate? | Trigger B |
+| 4 | Is a 40-point single-week score collapse the right Trigger C threshold? Should it need to be sustained? | Trigger C |
+| 5 | Is 4 of 6 welfare weeks the right Trigger D threshold? | Trigger D |
+| 6 | Are there circumstances where a trigger should *not* fire — for example, a student who has self-disclosed a bereavement and whose low scores are contextually explained? | Override design |
+| 7 | What is the minimum clinical framing for the disclosure email that is appropriate — i.e., what must it say and what must it not say? | Notification content |
+| 8 | Should Mind Measure recommend a maximum number of Level 4 notifications per student (e.g., one per 30 days) to avoid contact fatigue at the university? | Idempotency |
+
+---
+
+## 5. What This Policy Is Not Asking the Clinical Advisor to Validate
+
+For clarity on scope:
+
+- **The scoring algorithm itself** — the V2 scoring weights (70/15/15) are a product design choice, not a clinical instrument. Clinical validation of the algorithm is a future research priority.
+- **The Jodie conversation design** — question rotation, conversation length, and tone are separate from the safeguarding trigger design.
+- **The legal basis for disclosure** — the GDPR/consent model is a legal question, not a clinical one.
+- **Crisis response protocols** — Level 5 (real-time crisis response) is a separate track requiring both clinical and technical input.
