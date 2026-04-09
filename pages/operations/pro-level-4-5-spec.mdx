@@ -1,0 +1,314 @@
+# Pro — Level 4 & 5 In-App Response: Technical Spec
+
+> **Status:** Phase A built & deployed. Phase B pending compound trigger engine (blocked: clinical review).
+> **Target repo:** `mind-measure-pro-mobile`  
+> **Last updated:** April 2026
+
+---
+
+## Build Status
+
+| Phase | Description | Status |
+|---|---|---|
+| A | Level 5 — Crisis interstitial after high-risk check-in | ✅ Built & deployed |
+| B | Level 4 — Persistent support banner on dashboard | ⏳ Dormant — awaiting compound trigger engine (Phase 2 of university spec) |
+
+---
+
+## Overview
+
+Two gaps in the current Pro mobile app relative to the Wellbeing Protection Policy:
+
+1. **Level 5 gap:** `risk_level: high` is computed by Bedrock and stored in `fusion_outputs.analysis`, but nothing happens in the UI. The score is shown and the employee goes back to their dashboard. If someone has just expressed suicidal ideation in a check-in, the next thing they see is their score number.
+
+2. **Level 4 gap:** The `welfare_trigger_state` table tracks compound trigger state per employee, but nothing reads it from the mobile app. There is no in-app signal to an employee that they've been in a sustained difficult pattern, and no proactive EAP surfacing.
+
+Both gaps are fixable with contained changes — no new database tables, no backend infrastructure, no employer notification. All changes are entirely within the product and private to the employee.
+
+---
+
+## Phase A — Level 5: Crisis Interstitial After Check-In ✅ BUILT
+
+### What was built
+
+**Files changed:**
+
+| File | Change |
+|---|---|
+| `src/components/mobile/CheckinAssessmentSDK.tsx` | `onComplete` prop type changed from `() => void` to `(result: { riskLevel: string }) => void`. `savedRiskLevel` state added; set from `enrichmentResult.risk_level` after the DB insert; passed to `onComplete` in the `onScoreRevealed` callback. |
+| `src/components/mobile/MobileAppStructure.tsx` | `'crisis_interstitial'` added to `Screen` type. `pendingRiskLevel` state added. `onComplete` handler now routes to `crisis_interstitial` if `riskLevel === 'high'`, otherwise proceeds to dashboard as before. `CrisisInterstitial` imported and rendered for the new screen case. |
+| `src/components/mobile/CrisisInterstitial.tsx` | **New file.** Full-screen component on `spectra` background for visual continuity with `ProcessingScreen`. Fetches company EAP details via `BackendServiceFactory` using same pattern as `HelpPage`. Always shows 999, Samaritans, NHS 111. Shows EAP button if `companies.mental_health_services[0]` is configured. "I'm OK for now" dismiss at bottom. Animated entrance with `motion/react`. |
+
+### What it does
+
+When Bedrock returns `risk_level: high` from a check-in conversation, a full-screen interstitial is shown **after** the ProcessingScreen score reveal, **before** the employee returns to their dashboard. The interstitial acknowledges what was shared, provides immediate crisis contacts, and gives the employee a simple path forward.
+
+This replaces the current silent auto-advance to dashboard.
+
+### User experience
+
+1. Employee completes check-in → `ProcessingScreen` runs → score revealed
+2. Score hold completes → **instead of routing to dashboard**, `MobileAppStructure` checks `riskLevel` from the completed assessment
+3. If `riskLevel === 'high'`: show `CrisisInterstitial` full-screen
+4. `CrisisInterstitial` displays:
+   - Warm heading: *"We heard something in what you shared"*
+   - Short copy: *"It takes courage to talk about difficult feelings. If you're struggling right now, please reach out — support is available."*
+   - 999 button (red, prominent — "Immediate danger")
+   - Samaritans button — Call 116 123 / Text (links to samaritans.org)
+   - Company EAP button (if `mental_health_services` is configured for their company)
+   - "I'm OK for now" dismiss button — understated, bottom of screen
+5. Dismissing → employee goes to dashboard. No score held back, no drama.
+
+**Copy principles:**
+- Never say "your score triggered an alert"
+- Never reference thresholds, criteria, or surveillance
+- Warm, human, non-clinical
+- Does not mention the employer
+
+### Files to change
+
+#### 1. `CheckinAssessmentSDK.tsx` — pass `riskLevel` to `onComplete`
+
+Currently `onComplete` is called with no arguments. Change the prop type and the call site to pass the risk level from the fusion result.
+
+```typescript
+// Current
+onComplete: () => void;
+
+// New
+onComplete: (result: { riskLevel: string }) => void;
+```
+
+The `riskLevel` is available in the fusion result stored to `fusion_outputs`. After the save is complete and `onScoreRevealed` fires, call:
+
+```typescript
+onComplete({ riskLevel: fusionResult?.analysis?.risk_level ?? 'none' });
+```
+
+#### 2. `MobileAppStructure.tsx` — intercept high-risk completions
+
+Add state:
+
+```typescript
+const [pendingCrisisRiskLevel, setPendingCrisisRiskLevel] = useState<string | null>(null);
+```
+
+In the `onComplete` handler for `checkin_assessment`:
+
+```typescript
+// Old
+onComplete={() => {
+  setCurrentScreen('dashboard');
+  setActiveTab('dashboard');
+}}
+
+// New
+onComplete={({ riskLevel }) => {
+  if (riskLevel === 'high') {
+    setPendingCrisisRiskLevel(riskLevel);
+    setCurrentScreen('crisis_interstitial'); // new screen value
+  } else {
+    setCurrentScreen('dashboard');
+    setActiveTab('dashboard');
+  }
+}}
+```
+
+Add `'crisis_interstitial'` to the `Screen` type union. Render `CrisisInterstitial` when `currentScreen === 'crisis_interstitial'`:
+
+```typescript
+if (currentScreen === 'crisis_interstitial') {
+  return (
+    <CrisisInterstitial
+      onDismiss={() => {
+        setPendingCrisisRiskLevel(null);
+        setCurrentScreen('dashboard');
+        setActiveTab('dashboard');
+      }}
+    />
+  );
+}
+```
+
+#### 3. New component: `CrisisInterstitial.tsx`
+
+**File:** `src/components/mobile/CrisisInterstitial.tsx`
+
+Props:
+```typescript
+interface CrisisInterstitialProps {
+  onDismiss: () => void;
+}
+```
+
+Layout:
+- Full-screen, `spectra` (`#2B3A52`) background — same as ProcessingScreen for visual continuity
+- No back button, no header chrome
+- Three sections stacked vertically:
+  1. **Top third:** Heading + copy (warm, as above)
+  2. **Middle:** Crisis action buttons (999, Samaritans, EAP if available)
+  3. **Bottom:** "I'm OK for now" dismiss — small, `sinbad` text colour, not a prominent button
+
+EAP data: fetched from the same `companies.mental_health_services` source as `HelpPage`. The component calls `BackendServiceFactory` to get the employee's company profile and extracts the first `mental_health_services` entry with a phone or website. If none found, omit the EAP button — 999 and Samaritans are always shown.
+
+```typescript
+// EAP fetch (same pattern as HelpPage)
+const { data: profileData } = await backendService.database.select('profiles', {
+  filters: { user_id: user.id }, limit: 1,
+});
+const companyId = profileData?.[0]?.company_id;
+// ... then fetch company.mental_health_services[0]
+```
+
+---
+
+## Phase B — Level 4: Persistent Support Banner on Dashboard
+
+### What it does
+
+When a employee has active compound triggers (sustained pattern of concern), their dashboard shows a persistent support card pulling their EAP details and crisis lines. This is proactive and warm — not an alert, not a warning. It surfaces help at the moment the employee is most likely to need it.
+
+### User experience
+
+On dashboard load:
+1. `useDashboardData` checks current user's compound trigger state via a new API call
+2. If `triggerActive: true`, a `SupportBanner` card renders near the top of the dashboard — below the score hero but above the insights
+3. The banner shows:
+   - Subtle heading: *"Some extra support for you"*
+   - One-liner: *"We've noticed things have been tough lately. Here's some support if you need it."*
+   - EAP call/web button (if configured) — primary action
+   - Samaritans shortcut
+   - "Get support" link — opens full `HelpPage`
+4. The banner is **not immediately dismissible** — it persists for 7 days from the first trigger date, stored in `localStorage` with a key per trigger period
+5. It disappears automatically when `triggerActive` returns false
+
+### Files to change
+
+#### 1. New API endpoint: `api/welfare-record/trigger-check.ts`
+
+**File:** `mind-measure-pro-core/api/welfare-record/trigger-check.ts` (or `mind-measure-pro-mobile/api/` if the pro mobile has its own API)
+
+```
+GET /api/welfare-record/trigger-check
+```
+
+Auth: employee JWT (Cognito). Reads `welfare_trigger_state` for the calling user's `user_id`.
+
+Returns:
+```typescript
+{
+  triggerActive: boolean;
+  eapName?: string;
+  eapPhone?: string;
+  eapUrl?: string;
+}
+```
+
+The `eapName/phone/url` are pulled from `companies.mental_health_services[0]` for the employee's company — avoids a second API call from the app.
+
+**Trigger logic** (mirrors the query in `api/welfare-record/index.ts`):
+```sql
+SELECT
+  (  consecutive_critical_weeks >= 2
+  OR crisis_flags_7day_window >= 2
+  OR welfare_weeks_6wk_window >= 4
+  OR (trailing_4wk_avg IS NOT NULL AND trailing_4wk_avg < 35)
+  ) AS trigger_active
+FROM welfare_trigger_state
+WHERE student_id = $1
+```
+
+Note: `welfare_trigger_state` uses `student_id` — in the Pro context this will be the employee's `user_id` cast as UUID. If the row doesn't exist yet (trigger engine not yet built), return `{ triggerActive: false }` rather than erroring.
+
+#### 2. `useDashboardData.ts` — add trigger check
+
+Add a `triggerActive` boolean and EAP fields to the hook's return value. Fire the `trigger-check` API call alongside the existing data fetches.
+
+```typescript
+// New fields returned by hook
+triggerActive: boolean;
+eapName: string | null;
+eapPhone: string | null;
+eapUrl: string | null;
+```
+
+The call should be non-blocking — if it fails (network error, 500), default to `triggerActive: false` and log silently. It must never break the dashboard load.
+
+#### 3. New component: `SupportBanner.tsx`
+
+**File:** `src/components/mobile/dashboard/SupportBanner.tsx`
+
+Props:
+```typescript
+interface SupportBannerProps {
+  eapName: string | null;
+  eapPhone: string | null;
+  eapUrl: string | null;
+  onOpenHelp: () => void;
+}
+```
+
+Design:
+- Fits the dashboard card style — white card, `spectra` text, `sinbad` accents
+- **Not** red or alarming — this is support, not an alert
+- Subtle left border: `sinbad` (`#6B8DB2`) — the same colour used for steady/informational UI
+- EAP button (if `eapPhone` set): `sinbad` background, phone icon, company EAP name label
+- Samaritans shortcut: text link, "116 123", phone icon
+- "Get support" → opens `HelpPage` via `onOpenHelp`
+- Dismiss (×) in top-right — stores dismissal in `localStorage` keyed by week (`support-banner-dismissed-{week}`) so it reappears the following week if triggers persist
+
+#### 4. `MobileDashboard.tsx` — render `SupportBanner`
+
+Add `SupportBanner` to the dashboard render, positioned after `DashboardHero` and before the insights/themes section:
+
+```typescript
+const { triggerActive, eapName, eapPhone, eapUrl, ...rest } = useDashboardData();
+
+// In render:
+{triggerActive && (
+  <SupportBanner
+    eapName={eapName}
+    eapPhone={eapPhone}
+    eapUrl={eapUrl}
+    onOpenHelp={() => setCurrentScreen('help')}
+  />
+)}
+```
+
+---
+
+## Implementation Order
+
+```
+Phase A (Crisis Interstitial) ✅ BUILT & DEPLOYED — April 2026
+
+Phase B (Support Banner) — pending
+  Blocked: welfare_trigger_state is populated by the compound trigger engine
+  (Phase 2 of university spec — awaiting clinical threshold review).
+  Build now (dormant until Phase 2 ships) OR defer — either is fine.
+
+  When ready:
+  1. api/welfare-record/trigger-check.ts: new endpoint in mind-measure-pro-core
+  2. useDashboardData: add trigger check
+  3. SupportBanner.tsx: new component
+  4. MobileDashboard: wire in
+```
+
+---
+
+## What This Does Not Include
+
+- **No employer notification** — by design, per the Pro Wellbeing Protection Policy
+- **No score withholding** — the employee always sees their score. The interstitial comes after, not instead of, the reveal
+- **No new database tables** — `welfare_trigger_state` already exists from migration-017. Phase B will read it (currently empty until Phase 2 of the university implementation builds the compound trigger engine)
+- **No changes to the weekly reflection pipeline** — the welfare reflection hold logic is already in the Pro core (`mind-measure-pro-core/api/reflections/weekly.ts`, if it follows the same pattern as the university core)
+
+---
+
+## Open Question Before Building Phase B
+
+Phase B reads `welfare_trigger_state` which is populated by the compound trigger engine (Phase 2/4 of the university implementation — currently blocked on clinical review). Until that engine runs, `triggerActive` will always be false and the banner will never appear.
+
+**Decision needed:** Should Phase B be built now (complete but dormant until Phase 2 ships), or deferred until Phase 2 is ready?
+
+Recommendation: build it now. The code is small, it's self-contained, and having the display layer ready means the full Level 4 response activates automatically the moment the trigger engine ships — no second mobile deployment needed.

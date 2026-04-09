@@ -19,7 +19,9 @@ This document specifies the technical work required to implement the [Wellbeing 
 | 4 | Disclosure post-notification review queue (write actions) | ⏳ Blocked: Phase 3 |
 | 5 | Onboarding consent screen (mobile apps) | ⏳ Blocked: legal sign-off, T&C update |
 | 6 | Per-student welfare timeline + PDF export | ✅ Built & deployed |
-| 7 | Real-time Level 5 crisis response | 📋 Planned — ElevenLabs research required |
+| 7 | Real-time Level 5 crisis response (university) | 📋 Planned — ElevenLabs research required |
+| Pro A | Level 5 in-app crisis interstitial (Pro mobile) | ✅ Built & deployed — see Pro spec |
+| Pro B | Level 4 dashboard support banner (Pro mobile) | ⏳ Dormant — awaiting Phase 2 |
 
 ---
 
@@ -363,7 +365,9 @@ Phase 1a (DB) ✅ → Phase 6 ✅ (no dependency — reads existing tables)
 
 **Priority: Critical | Blocked by: ElevenLabs webhook capability review, clinical advisor input**
 
-The hardest and most architecturally complex piece. Requires a mechanism to detect crisis content during or immediately after a live Jodie check-in and fire a notification within minutes.
+> **Note — Pro product:** The Pro equivalent of Level 5 in-app response has been built and deployed as a separate track. See [Pro — Level 4 & 5 In-App Response](/operations/pro-level-4-5-spec). The university version below is architecturally more complex because it also involves notifying the institution's safeguarding contact.
+
+The hardest and most architecturally complex piece for the university product. Requires a mechanism to detect crisis content during or immediately after a live Jodie check-in and fire a notification within minutes.
 
 ### Design options (to be evaluated)
 
@@ -373,16 +377,18 @@ ElevenLabs fires a webhook on conversation end. The webhook payload is received 
 Latency: minutes (acceptable if Jodie's in-session guidance is sufficiently strong).  
 Risk: webhook support needs confirmation from ElevenLabs.
 
-**Option B — Check-in result re-analysis**  
-The existing check-in result pipeline (which already runs Bedrock analysis) is extended to classify crisis content immediately and trigger a real-time alert.
+**Option B — Check-in result re-analysis** ✅ Implemented in Pro  
+The existing check-in result pipeline (which already runs Bedrock analysis) is extended to classify crisis content immediately. The Pro implementation uses `risk_level: high` from the fusion result to trigger a `CrisisInterstitial` full-screen component after the score reveal. No employer/institutional notification in the Pro version — in-app resources only.
+
+For university: same pipeline extension, but additionally triggers a Level 5 notification to the safeguarding contact (same email mechanism as Level 4, with URGENT flag).
 
 Latency: seconds to minutes after conversation ends.  
 Simpler to implement; relies on existing pipeline rather than new webhook.
 
 **In-app response (both options):**  
-The check-in result screen surfaces crisis resources immediately when crisis content is detected: Samaritans (116 123), university emergency contact, 999. These are shown before the score reveal.
+✅ Done for Pro. University equivalent to be built alongside the notification work. Crisis resources shown before returning to dashboard: Samaritans (116 123), university emergency contact, 999.
 
-**Level 5 notification format:**  
+**Level 5 notification format (university only):**  
 Same as Level 4, plus: indication that crisis-level content was detected during a live check-in; time of the check-in; `URGENT` flag in subject line; stronger recommendation: *"This student may be at immediate risk. We recommend urgent contact."*
 
 ---
@@ -407,7 +413,8 @@ Phase 7 (Real-time L5) — parallel track, ElevenLabs research required
 ```
 
 **Can be started now (no external dependencies):**
-- Nothing — all non-blocked infrastructure is complete ✅
+- Nothing — all non-blocked university infrastructure is complete ✅
+- Pro Phase B (dashboard banner) can be built now and will be dormant until Phase 2 ships
 
 **Start when clinical review done:**
 - Phase 2 — compound trigger engine
