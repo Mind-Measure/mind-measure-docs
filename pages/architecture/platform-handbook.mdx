@@ -1,0 +1,154 @@
+# Platform handbook
+
+**Status:** Canonical — single source of truth for how Mind Measure is organised, constrained, and deployed.  
+**Audience:** Engineers and AI agents working in the workspace.  
+**Supersedes:** `docs/archive/DEVELOPMENT_PROTOCOL_MASTER.md` in each core repo (historical; do not treat as current workflow).
+
+---
+
+## What belongs here
+
+Use this page when you need **one answer** on:
+
+- Which repo owns which domain
+- Non-negotiable product constraints (what not to change)
+- How production deploys happen
+- What to read before a session that touches welfare or reflections
+
+If this page disagrees with an old “master” PDF or archive doc, **this page wins**. Update this file when facts change.
+
+**Deeper reference (not duplicated here):** [Repository map](/architecture/repository-map), [Database](/architecture/database), [Backend](/architecture/backend), [Security](/security).
+
+---
+
+## Product lines
+
+| Line | Who | Admin | Mobile | Hub | Marketing |
+|------|-----|-------|--------|-----|------------|
+| **University** | Students | `mind-measure-core` → admin.mindmeasure.co.uk | `mind-measure-mobile-final` → mobile.mindmeasure.app | `mind-measure-university-hub` → hub.mindmeasure.co.uk | mindmeasure.co.uk, mindmeasure.app (student) |
+| **Pro** | Employees | `mind-measure-pro-core` → admin.mindmeasurepro.com | `mind-measure-pro-mobile` → mobile.mindmeasurepro.app | `mind-measure-pro-hub` → hub.mindmeasurepro.com | mindmeasurepro.com |
+
+**Internal / founder ops (not a product surface):** `mind-measure-ops` → **business.mindmeasure.co.uk** (Next.js, private planning and compliance tracker; super-admin auth only).
+
+---
+
+## Repository quick map
+
+All repos live under the Mind Measure workspace root unless noted.
+
+### University
+
+| Repo | Domain | Stack | Role |
+|------|--------|-------|------|
+| `mind-measure-core/` | admin.mindmeasure.co.uk | React + Vite | Superuser + university dashboards, **all** `api/*` serverless APIs |
+| `mind-measure-mobile-final/` | mobile.mindmeasure.app | React + Vite + Capacitor | Student app (web + iOS) |
+| `mind-measure-university-hub/` | hub.mindmeasure.co.uk | Next.js | Content hub |
+| `mind-measure-university-site/` (`Mind Measure website/`) | mindmeasure.co.uk | React + Vite | University marketing |
+
+### Pro
+
+| Repo | Domain | Stack | Role |
+|------|--------|-------|------|
+| `mind-measure-pro-core/` | admin.mindmeasurepro.com | React + Vite | Company dashboards, APIs |
+| `mind-measure-pro-mobile/` | mobile.mindmeasurepro.app | React + Vite + Capacitor | Employee app |
+| `mind-measure-pro-hub/` | hub.mindmeasurepro.com | Next.js | Company content hub |
+| `mindmeasurepro/` | mindmeasurepro.com | React + Vite | Corporate marketing |
+
+### Shared
+
+| Repo | Domain | Stack | Role |
+|------|--------|-------|------|
+| `mind-measure-marketing-cms/` | marketing.mindmeasure.co.uk | Next.js + Prisma | Internal CMS, uploads |
+| `mind-measure-docs/` | docs.mindmeasure.co.uk | Next.js + Nextra | **This documentation site** |
+| `mind-measure-student/` | mindmeasure.app | React + Vite | Student marketing (current) |
+| `mind-measure-ops/` | business.mindmeasure.co.uk | Next.js | Founder ops (private) |
+
+### Packages (npm, `@mindmeasure/*`)
+
+`mindmeasure-shared-types`, `mindmeasure-shared-services`, `mindmeasure-shared-ui`, `mindmeasure-api-lib` — shared libraries; publish/version per package workflow.
+
+---
+
+## Development model (current)
+
+- **Local development is normal.** Run dev servers (`npm run dev`, etc.) to build and test features. The old “production-only / no localhost” rule in archived master docs is **obsolete**; do not propagate it.
+- **Deploy to production** for most apps by merging to **`main`** and letting **Vercel** build (GitHub integration). Do **not** use `npx vercel --prod` as the default path; it is only for exceptions (see below).
+- **Test before push.** Follow project verification (build, lint where applicable) before asking to deploy.
+- **University / Pro parity:** If a change applies to both lines, mirror it unless the product owner says otherwise.
+
+---
+
+## Critical constraints
+
+1. **Do not modify the check-in / assessment conversation pipeline** implemented with ElevenLabs and the multimodal assessment engine in production without an explicit, reviewed change plan. Treat it as frozen unless leadership approves a scoped change.
+2. **Do not hardcode database credentials.** Use `getSecureDbConfig()` from `api/_lib/db-config.ts` (or the established pattern in each repo).
+3. **Avoid partial commits** in any single repo: commit all related files together so Vercel never deploys half a change set.
+4. **Deploy workflow:** push to `main` → Vercel auto-build. **Exceptions** (no GitHub auto-deploy on some projects): university hub, pro hub, and docs site may require manual Vercel deploy — confirm in the repo’s README or ops notes; still avoid casual `vercel --prod` outside that documented process.
+
+---
+
+## Stack (summary)
+
+- **Frontends:** React, TypeScript, Vite, Tailwind, Radix (admin); motion on marketing sites.
+- **Hubs / CMS / docs:** Next.js, PostgreSQL via `pg`, Tiptap in hubs.
+- **APIs:** Vercel serverless; use `Client` + `await client.end()` in serverless handlers unless the repo standard says otherwise (e.g. Pool in long-lived Next server).
+- **Data:** Aurora Serverless v2 (PostgreSQL), `eu-west-2`.
+- **Auth:** Cognito for end users; superuser flows use email + one-time code patterns documented per app.
+- **AI:** ElevenLabs (Jodie), Bedrock (e.g. Claude for text analysis), Rekognition where used; details in [Assessment](/assessment) and ops specs.
+
+---
+
+## Session protocol (agents and humans)
+
+Before **writing code or plans** for work that affects production behaviour:
+
+1. Read this **Platform handbook** (you are here).
+2. Read the operations pack **in full** when reflections, welfare, or safeguarding apply:
+   - [Hierarchy of help](/operations/hierarchy-of-help)
+   - [Weekly reflection safeguards](/operations/weekly-reflection-safeguards)
+   - [Weekly reflection](/operations/weekly-reflection)
+   - [Weekly reflection runbook](/operations/weekly-reflection-runbook)
+3. If changing welfare or disclosure behaviour, also read [Wellbeing protection policy](/operations/wellbeing-protection-policy) and [Wellbeing protection tech spec](/operations/wellbeing-protection-tech-spec).
+4. Read the **actual source files** you will change — documentation is not a substitute.
+
+Cursor rule: `.cursor/rules/session-start-protocol.mdc` mirrors this list.
+
+---
+
+## Jodie prompts (reference)
+
+Workspace root and variants:
+
+- `jodie_prompt_v2.md` — base  
+- `jodie_prompt_v2_uni.md` — university / student  
+- `jodie_prompt_v2_pro.md` — workplace  
+
+UK English; one question at a time; consistent UX rules as documented in prompt files and [Jodie](/admin) sections where applicable.
+
+---
+
+## ElevenLabs marketing agent IDs (widgets)
+
+| Context | Agent ID |
+|---------|------------|
+| University marketing (mindmeasure.co.uk) | `agent_2101kjqr5fyhffbrb84syvvkf5yn` |
+| Student marketing (mindmeasure.app) | `agent_2201kjrf3g1z4b4rsc4k3gawkfxj` |
+| Corporate marketing (mindmeasurepro.com) | `agent_3801kjrfhe4de10vgjbdjfw0z4ph` |
+| Employee marketing | `agent_3901kjrfnhpa9jxmh0b8bz0dwf7u` |
+
+Institutional agents are provisioned per university/company; see [Institutional agents](/architecture/institutional-agents).
+
+---
+
+## Related documentation
+
+| Topic | Where |
+|-------|--------|
+| Repo detail | [Repository map](/architecture/repository-map) |
+| System diagram & legacy detail | [Architecture overview](/architecture) |
+| Roadmap / goals | Internal `.cursor/rules/current-goals.mdc` (also summarise in planning docs) |
+| Archived master (historical) | `mind-measure-core/docs/archive/DEVELOPMENT_PROTOCOL_MASTER.md` — redirect only |
+
+---
+
+*Last updated: April 2026.*
