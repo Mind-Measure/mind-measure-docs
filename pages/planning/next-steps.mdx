@@ -1,0 +1,260 @@
+# Next Steps — Mind Measure Platform
+
+> **As of:** April 2026  
+> **Purpose:** Ordered action list across all workstreams. Organised by what can start now vs what is blocked, so development time is never wasted waiting for sign-offs that aren't ready.
+
+---
+
+## Right Now — No External Dependencies
+
+These can start immediately. Nothing is waiting on legal, clinical, or third-party input.
+
+### 1. Weekly Reflection — Production Wiring (University)
+
+The infrastructure is built and deployed. What remains is connecting it to real production data and shipping the remaining user-facing features.
+
+| Task | Notes |
+|---|---|
+| Welfare-modified reflection (Tier 2) | For negative-only weeks — student-facing, no external sign-off needed |
+| Opt-out toggle in app settings | Student should be able to pause weekly reflections |
+| Tier 0 nudge | Gentle push/email when no check-in for 7+ days |
+| Superuser audit panel — Wellbeing Sends view | Visibility into sent/held reflections for Mind Measure staff |
+
+**Repo:** `mind-measure-core`
+
+---
+
+### 2. Cohort Template Library — Phase 1
+
+Cohort analysis is the most-used feature in the university dashboard. Currently results are saved to `localStorage` with auto-generated titles and can't be shared.
+
+| Task | Notes |
+|---|---|
+| Add custom titles before saving a cohort | Simple UI change — editable title field |
+| DB migration — `saved_cohort_templates` table | `university_id`, `created_by`, `title`, `is_published`, config JSON |
+| Migrate save/load from `localStorage` to database | Cohorts persist across devices and don't vanish on browser clear |
+
+This unblocks Phase 2 (live data) and Phase 3 (shared library). Phases 2–5 are sprint candidates once Phase 1 is done.
+
+**Repo:** `mind-measure-core`
+
+---
+
+### 3. Jodie Prompt Improvements
+
+Additive changes only — no structural change to the check-in flow. These improve the quality of data collected in every check-in and directly improve the Weekly Reflection.
+
+| Addition | What it captures |
+|---|---|
+| "What's one specific thing that happened this week?" | Named, dateable events |
+| Sleep/energy probe (if not raised naturally) | Strongest single wellbeing predictor |
+| Positive anchor before close | Wins data — currently underrepresented |
+| Social connection probe | Strong predictor, currently underrepresented |
+| "Thinking back across the whole week..." framing | Weekly perspective rather than just today |
+
+Requires prompt version bump and regression testing. University first (`jodie_prompt_v2_uni.md`), then Pro (`jodie_prompt_v2_pro.md`).
+
+---
+
+### 4. Marketing Site — Corporate Placeholder Images
+
+`mindmeasurepro.com` still has placeholder images in some sections. Replace with actual product screenshots (already exists in `New Screenshots/` folders in the repo).
+
+**Repo:** `mindmeasurepro`
+
+---
+
+## Waiting On Clinical Threshold Review
+
+The following are fully specced and ready to build the moment the clinical advisor has reviewed and approved the compound trigger thresholds (A–D). See [Clinical Threshold Rationale](/operations/clinical-threshold-rationale) for the questions that need answering.
+
+**Who needs to act:** Clinical advisor reviews `wellbeing-protection-policy.mdx` thresholds and either confirms or adjusts.
+
+### 5. Wellbeing Protection Phase 2 — Compound Trigger Engine (University)
+
+New `evaluateCompoundTriggers()` function in `weekly.ts`. Evaluates all four triggers against historical data, upserts `welfare_trigger_state`. No external notification yet — data layer only.
+
+**Repo:** `mind-measure-core`  
+**Spec:** [Wellbeing Protection Tech Spec](/operations/wellbeing-protection-tech-spec) — Phase 2
+
+---
+
+### 6. Pro Phase B — Dashboard Support Banner
+
+`SupportBanner` component on the Pro mobile dashboard. Reads `welfare_trigger_state` via a new `trigger-check` API endpoint. Dormant until Phase 5 above ships — activates automatically. Can be built now and will sit idle, or built once Phase 5 is live.
+
+**Repo:** `mind-measure-pro-mobile` + `mind-measure-pro-core`  
+**Spec:** [Pro Level 4 & 5 In-App Response](/operations/pro-level-4-5-spec) — Phase B
+
+---
+
+## Waiting On Legal/DPA Sign-Off
+
+### 7. Wellbeing Protection Phase 3 — Automated L4 Notification Pipeline (University)
+
+`sendSafeguardingDisclosure()` — sends the safeguarding email when compound triggers fire. Requires the DPA addendum to be in place and `safeguarding@mindmeasure.co.uk` to be created and SES-verified before this can go live.
+
+**Checklist before build:**
+- [ ] DPA addendum drafted and signed
+- [ ] `safeguarding@mindmeasure.co.uk` mailbox created
+- [ ] SES identity verified for that address
+- [ ] Clinical thresholds confirmed (Phase 2 dependency)
+
+**Repo:** `mind-measure-core`  
+**Spec:** [Wellbeing Protection Tech Spec](/operations/wellbeing-protection-tech-spec) — Phase 3
+
+---
+
+### 8. Wellbeing Protection Phase 5 — Onboarding Consent Screen (University)
+
+New screen in the student registration flow. Explains safeguarding disclosure basis before first check-in. Blocks the check-in flow until completed.
+
+**Checklist before build:**
+- [ ] T&Cs updated with safeguarding clause
+- [ ] Privacy policy updated with disclosure triggers
+- [ ] Legal confirms consent model is freely given
+
+**Repo:** `mind-measure-mobile-final`  
+**Spec:** [Wellbeing Protection Tech Spec](/operations/wellbeing-protection-tech-spec) — Phase 5
+
+---
+
+## After Phases 2/3 Are Live
+
+### 9. Wellbeing Protection Phase 4 — Disclosure Review Queue (Write Actions)
+
+The Welfare Record panel already shows pending disclosures (read-only). This phase adds the review form — staff confirm trigger, flag false positives, log outcomes. Extends `WelfareRecord.tsx`.
+
+**Repo:** `mind-measure-core`  
+**Spec:** [Wellbeing Protection Tech Spec](/operations/wellbeing-protection-tech-spec) — Phase 4
+
+---
+
+### 10. Weekly Reflection — Pro Parity
+
+Run the same weekly reflection pipeline in `mind-measure-pro-core` once the university version is validated in production. The infrastructure is identical — it's a port, not a rebuild.
+
+**Repo:** `mind-measure-pro-core`
+
+---
+
+## After University Reflection Is Validated
+
+### 11. Student Ambassador Platform
+
+Social media assets library + ambassador signup, referral tracking, performance dashboards, and bonus payouts. Spec not yet written — needs design thinking before engineering.
+
+**Phase order:**
+1. Ambassador signup and onboarding
+2. Social media assets library
+3. Referral tracking
+4. Ambassador dashboard (login, sign-ups, payouts)
+5. Admin management (approve, set tiers, process payouts)
+
+---
+
+### 12. Cohort Template Library — Phases 2–5
+
+Once Phase 1 (database migration + titles) is shipped:
+
+| Phase | Work |
+|---|---|
+| 2 | Live data — cohort charts query real data via `UniversityDataService` |
+| 3 | Library UI — browse, search, load published templates |
+| 4 | Historical overlay — same cohort across different time periods |
+| 5 | Institutional starter packs — Mind Measure seeds recommended templates |
+
+---
+
+## Medium Priority — Pick Up When Bandwidth Allows
+
+### 13. Score Reveal Interaction
+
+Short transition screen between processing and score display. Spec is written. Small engineering effort. Makes the score feel significant rather than instant.
+
+See [Roadmap](/planning/roadmap#score-reveal-interaction) for the full interaction sequence.
+
+---
+
+### 14. Auth Token Standardisation
+
+Align university and Pro mobile apps on the same Cognito token pattern (`cognitoApiClient`). Reduces auth bugs, enables shared API middleware.
+
+**Repos:** `mind-measure-mobile-final`, `mind-measure-pro-mobile`
+
+---
+
+### 15. Load Testing
+
+Full check-in flow at 100+ concurrent users. Identifies Bedrock/Rekognition throttling and Aurora connection bottlenecks before they become production incidents.
+
+---
+
+### 16. Wellbeing Protection Phase 7 — Real-Time L5 Crisis Response (University)
+
+The Pro version (in-app crisis interstitial) is already built. The university version is harder — it also needs to notify the safeguarding contact in near real-time. Needs ElevenLabs webhook research first to understand what's available post-call.
+
+**Prereq:** Research whether ElevenLabs post-call webhook is available and what it returns.
+
+---
+
+## Lower Priority / R&D
+
+| Item | Notes |
+|---|---|
+| Wellbeing Reports Enhanced | Needs therapist input for clinical appropriateness before further development |
+| Investor Dashboard | Design work needed first — no Figma exists yet |
+| Text-Based Check-In | Chat alternative to voice; medium effort; good for accessibility |
+| Voice Provider Abstraction | R&D — PersonaPlex at 100x cost reduction; meaningful only at 10k+ minutes/month |
+| Multi-Language Support | International students; significant scope; revisit at scale |
+| Real-Time Risk Escalation — Configurable Thresholds | Institution-level threshold configuration; depends on Phase 3 being live first |
+
+---
+
+## Non-Technical Actions Required
+
+These are not dev tasks but they unblock dev tasks. They need to happen outside the codebase.
+
+| Action | Unblocks | Owner |
+|---|---|---|
+| Clinical advisor reviews compound trigger thresholds A–D | Phases 2, 3, Pro B | Keith |
+| Legal confirms Pro GDPR — legitimate interests for anonymised cohort data | Pro policy finalisation | Lawyer |
+| DPA addendum drafted — covers L4/5 notification pathway | Phase 3 | Legal |
+| T&Cs updated with safeguarding clause and compound trigger criteria | Phase 5 | Keith / Legal |
+| Privacy policy updated with disclosure triggers and data categories | Phase 5 | Keith / Legal |
+| `safeguarding@mindmeasure.co.uk` created and SES-verified | Phase 3 | Keith |
+| Safeguarding contacts configured for each live university | L4 notifications function correctly | Keith (each partner) |
+
+---
+
+## Summary Order
+
+```
+Now (no blockers):
+  1. Weekly Reflection — production wiring + remaining features
+  2. Cohort Template Library Phase 1
+  3. Jodie prompt improvements
+  4. mindmeasurepro.com — replace placeholder images
+
+When clinical review done:
+  5. Wellbeing Protection Phase 2 — compound trigger engine
+  6. Pro Phase B — dashboard support banner (can build dormant now)
+
+When legal/DPA done:
+  7. Wellbeing Protection Phase 3 — L4 notification pipeline
+  8. Wellbeing Protection Phase 5 — consent screen
+
+After 2/3 live:
+  9. Wellbeing Protection Phase 4 — disclosure review queue
+ 10. Weekly Reflection Pro parity
+
+After university reflection validated:
+ 11. Student Ambassador Platform
+ 12. Cohort Template Library Phases 2–5
+
+Medium priority (pick up when bandwidth allows):
+ 13. Score Reveal Interaction
+ 14. Auth Token Standardisation
+ 15. Load Testing
+ 16. Wellbeing Protection Phase 7 — real-time L5 university
+```
