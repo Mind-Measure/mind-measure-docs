@@ -1,0 +1,129 @@
+---
+description: Mind Measure platform — architecture, repositories, domains, and conventions
+alwaysApply: true
+---
+
+# Mind Measure Platform
+
+**Canonical context:** [Platform handbook](https://docs.mindmeasure.co.uk/architecture/platform-handbook) (`mind-measure-docs/pages/architecture/platform-handbook.mdx`) — single source of truth for constraints, deploy workflow, session reading order, and repo list. If this rule file disagrees with the handbook, **update the handbook** and then align this file.
+
+Mental health monitoring and support platform with two product lines: **University** (students) and **Pro** (corporate employees). All repos live under `/Users/keithduddy/Desktop/Mind Measure local /`.
+
+## Repository Map
+
+### University Product
+
+| Repo | Domain | Stack | Purpose |
+|------|--------|-------|---------|
+| `mind-measure-core/` | admin.mindmeasure.co.uk | React + Vite | Superuser panel, university dashboards, all backend APIs (`/api/*`) |
+| `mind-measure-mobile-final/` | mobile.mindmeasure.app | React + Vite + Capacitor | Student mobile app (web + iOS) |
+| `mind-measure-university-hub/` | hub.mindmeasure.co.uk | Next.js 16 | University content hub (articles, nudges, content pool) |
+| `mind-measure-university-site/` (subfolder `Mind Measure website/`) | mindmeasure.co.uk | React + Vite | University marketing website |
+
+### Pro (Corporate) Product
+
+| Repo | Domain | Stack | Purpose |
+|------|--------|-------|---------|
+| `mind-measure-pro-core/` | admin.mindmeasurepro.com | React + Vite | Company dashboards, superuser panel, backend APIs |
+| `mind-measure-pro-mobile/` | mobile.mindmeasurepro.app | React + Vite + Capacitor | Employee mobile app (web + iOS) |
+| `mind-measure-pro-hub/` | hub.mindmeasurepro.com | Next.js 16 | Company content hub |
+| `mindmeasurepro/` | mindmeasurepro.com | React + Vite | Corporate marketing website |
+
+### Shared / Supporting
+
+| Repo | Domain | Stack | Purpose |
+|------|--------|-------|---------|
+| `mind-measure-marketing-cms/` | marketing.mindmeasure.co.uk | Next.js 16 + Prisma | Internal CMS — blog, social, image uploads to S3 |
+| `mind-measure-docs/` | docs.mindmeasure.co.uk | Next.js 14 + Nextra | Technical documentation site |
+| `mindmeasure-shared-types/` | npm package | TypeScript + tsup | `@mindmeasure/shared-types` |
+| `mindmeasure-shared-services/` | npm package | TypeScript + tsup | `@mindmeasure/shared-services` |
+| `mindmeasure-shared-ui/` | npm package | TypeScript + tsup | `@mindmeasure/shared-ui` (Radix, Recharts) |
+| `mindmeasure-api-lib/` | npm package | TypeScript + tsup | `@mindmeasure/api-lib` (serverless middleware) |
+| `mind-measure-student/` | mindmeasure.app | React + Vite | Student marketing site |
+| `mind-measure-ops/` | business.mindmeasure.co.uk | Next.js | Founder ops (private; super-admin only) |
+
+### Student Marketing Sites
+
+| Repo | Domain | Notes |
+|------|--------|-------|
+| `mind-measure-student-site/` | (was mindmeasure.app) | Astro 5 + Sanity — legacy, being replaced |
+| `mind-measure-student/` | mindmeasure.app | React + Vite — current student site |
+
+## Critical Constraints
+
+1. **NEVER modify the check-in backend** (ElevenLabs multimodal assessment engine). The AI conversation flow is production.
+2. **NEVER deploy via Vercel CLI** (`npx vercel --prod`). All deploys are git-push to `main` → Vercel auto-builds.
+3. **NEVER hardcode database credentials.** Use `getSecureDbConfig()` from `api/_lib/db-config.ts`.
+4. **Partial commits are dangerous.** Always commit ALL modified files in a repo together. A partial commit triggers a Vercel rebuild that deploys committed files alongside OLD versions of uncommitted files.
+
+## Tech Stack Summary
+
+- **Frontend**: React 18/19 + TypeScript + Vite + Tailwind CSS + Radix UI
+- **Marketing sites**: React + Vite (corporate/university), motion/react for animations
+- **Content hubs**: Next.js 16 + Tiptap editor + PostgreSQL (pg)
+- **Marketing CMS**: Next.js 16 + Prisma + sharp (image processing) + S3
+- **Mobile**: Capacitor 8 wrapping React/Vite, deployed as web (Vercel) + iOS (TestFlight)
+- **Backend APIs**: Vercel serverless functions (in `api/` directories)
+- **Database**: PostgreSQL on AWS Aurora Serverless v2
+- **Auth**: AWS Cognito (students/employees), custom JWT (superuser 6-digit code)
+- **Storage**: AWS S3 (`mindmeasure-user-content-459338929203`, region `eu-west-2`)
+- **AI/ML**: ElevenLabs (Jodie voice agent), AWS Bedrock (Claude 3.7 Sonnet for text analysis), AWS Rekognition (visual analysis)
+- **Email**: AWS SES from `noreply@mindmeasure.co.uk`
+- **Monitoring**: Sentry
+
+## Deployment Protocol
+
+1. Push to `main` on GitHub
+2. Vercel auto-detects and builds
+3. Custom domain serves the new version
+
+### End-of-Session Commit Rule
+
+Before ending ANY session where code was modified:
+1. `git status` on EVERY touched project
+2. `git add -A && git commit` with descriptive message
+3. `git push` to trigger deployment
+4. Verify push succeeded
+
+## Key Database Tables
+
+- `core_users` — Mind Measure staff, `user_permission[]` enum array
+- `university_authorized_users` / `company_authorized_users` — institutional admin accounts
+- `profiles` — User profiles (linked to Cognito)
+- `universities` / `companies` — Institution config, branding, settings
+- `institution_agents` — Per-institution ElevenLabs Jodie agent config
+- `assessment_sessions` — Check-in and baseline session data
+- `fusion_outputs` — Multimodal analysis results (text + audio + visual)
+
+## ElevenLabs Agents (Jodie)
+
+Each product line has marketing + assessment agents:
+
+| Agent | Agent ID | Purpose |
+|-------|----------|---------|
+| University Marketing | `agent_2101kjqr5fyhffbrb84syvvkf5yn` | mindmeasure.co.uk widget |
+| Student Marketing | `agent_2201kjrf3g1z4b4rsc4k3gawkfxj` | mindmeasure.app widget |
+| Corporate Marketing | `agent_3801kjrfhe4de10vgjbdjfw0z4ph` | mindmeasurepro.com widget |
+| Employee Marketing | `agent_3901kjrfnhpa9jxmh0b8bz0dwf7u` | Employee site widget |
+
+Institutional agents are created per-university/company via the ElevenLabs API, configured with custom knowledge bases compiled from CMS data.
+
+## Jodie Prompt Versions
+
+Base prompt: `jodie_prompt_v2.md` in workspace root. Variants:
+- `jodie_prompt_v2_uni.md` — student-facing (university context)
+- `jodie_prompt_v2_pro.md` — employee-facing (workplace context)
+
+Key rules: UK English, one question at a time, rotate acknowledgment phrases (never repeat), 6-8 exchanges before mood score, close with "Finish button".
+
+## Documentation
+
+Full technical docs at `mind-measure-docs/` (Nextra site). Start with **[Platform handbook](https://docs.mindmeasure.co.uk/architecture/platform-handbook)**.
+
+Key sections:
+- Architecture: `pages/architecture/` (platform handbook, system design, repo map, database schema, backend)
+- Assessment: `pages/assessment/` (scoring algorithm, text/audio/visual analysis)
+- Admin: `pages/admin/` (dashboard features, CMS, AI insights)
+- Content Hub: `pages/content-hub/` (article editor, nudges, content pool)
+- Operations: `pages/operations/` (playbooks, coding standards)
+- Security: `pages/security/` (GDPR, encryption, auth)

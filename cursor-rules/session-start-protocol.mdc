@@ -1,0 +1,41 @@
+---
+description: Read all relevant documentation before starting any new sprint, feature, or task in Mind Measure
+alwaysApply: true
+---
+
+# Session Start Protocol
+
+At the start of EVERY new chat session where work will be done, before writing any code, documentation, or plans:
+
+## 1. Read core platform docs
+
+Always read these first — they define the codebase and constraints:
+
+- **`mind-measure-docs/pages/architecture/platform-handbook.mdx`** — single source of truth: repos, constraints, deploy model, session discipline, and links to deeper docs. Published at `https://docs.mindmeasure.co.uk/architecture/platform-handbook`.
+- `mind-measure-docs/pages/operations/hierarchy-of-help.mdx`
+- `mind-measure-docs/pages/operations/weekly-reflection-safeguards.mdx`
+- `mind-measure-docs/pages/operations/weekly-reflection.mdx`
+- `mind-measure-docs/pages/operations/weekly-reflection-runbook.mdx`
+
+## 2. Read directly relevant source files
+
+For any feature being touched, read the actual implementation files before producing output. Do not rely on documentation alone — the code is the truth.
+
+Examples:
+- Working on reflections → read `api/reflections/weekly.ts` in full
+- Working on audit panel → read `api/reflections/sends.ts` + `WellbeingSends.tsx`
+- Working on agents → read the relevant agent config and endpoint files
+- Working on DB → read the most recent migration files
+
+## 3. Read the policy docs if working on welfare/safeguarding
+
+- `mind-measure-docs/pages/operations/wellbeing-protection-policy.mdx`
+- `mind-measure-docs/pages/operations/wellbeing-protection-tech-spec.mdx`
+
+## 4. Check both university and pro repos
+
+If a change affects university, check if the pro repo needs the same change. They must be kept in parity unless explicitly told otherwise.
+
+## Rule
+
+Do not produce code, documentation, or architectural decisions until the relevant files above have been read in full. "I read part of it" is not sufficient.

@@ -1,0 +1,90 @@
+---
+description: Current project goals, roadmap, and active work streams
+alwaysApply: true
+---
+
+# Current Goals & Roadmap (March 2026)
+
+## Active Work Streams (In Progress)
+
+### Marketing Website Polish
+- Corporate site (`mindmeasurepro.com`) and university site (`mindmeasure.co.uk`) both live
+- Maintaining visual parity between the two sites (shared section treatments, consistent UX)
+- Corporate site needs placeholder images replaced with actual product screenshots
+- Student site (`mindmeasure.app`) being reskinned — separate task
+- `mindmeasurepro.app` — employee-facing marketing site planned (reskin of mindmeasure.app approach)
+
+### Jodie Voice Agents
+- Four marketing agents deployed (university, student, corporate, employee) with "Ask Jodie" widget
+- Institutional agents live (Phases 1–3 completed Feb 2026): each university/company gets a personalised Jodie
+- Knowledge bases compiled from CMS onboarding data (emergency resources, support services, contacts)
+- Custom questions feature (paid tier) allows institutions to add natural-language questions to check-ins
+
+### Content Hub
+- University and corporate content hubs live
+- Image upload working (proxied through marketing CMS to S3)
+- Content pool enables sharing articles across institutions
+- Blog posts surface on marketing sites via `HubShowcaseSection`
+
+### Assessment Engine
+- V2 scoring: 70% text, 15% audio, 15% visual
+- Baseline (PHQ-2, GAD-2, mood scale) + daily check-ins via Jodie
+- Wellbeing reports (PDF) v1.5 production ready
+
+## Roadmap — Active Planning
+
+### Cohort Template Library (HIGH — sprint candidate)
+Evolve cohort analysis from localStorage build-it-yourself tool into a shared library of reusable, live-data cohort views. Users build configurations once, publish to a browsable library, always populated with current data.
+- Phase 1: Custom titles, migrate localStorage → `saved_cohort_templates` DB table
+- Phase 2: Live data population via `UniversityDataService`
+- Phase 3: Library UI — browse, search, load published templates
+- Phase 4: Historical overlay (same cohort across time periods)
+- Phase 5: Institutional starter packs
+
+### Streak Rewards (HIGH — spec to be written)
+Digital voucher rewards for consistent check-in habits. Partner retailer integration creates sponsorship revenue.
+
+### Student Ambassador Platform (HIGH — spec to be written)
+Social media assets library + ambassador signup/management system. Referral tracking, performance dashboards, bonus payouts.
+
+### Auth Token Standardisation (MEDIUM — planning)
+Align university and pro mobile apps on same token pattern (`cognitoApiClient`). Feeds into shared auth package.
+
+### Score Reveal Interaction (MEDIUM — spec written)
+UX theatre for post-check-in score display. Brief transition screen ("Preparing your results"), then animated gauge reveal with scoring band highlight and one-line interpretation. Keeps it to 1–2 seconds — intentional pause, not a delay.
+
+### Load Testing (MEDIUM — not started)
+Load test full check-in flow at 100+ concurrent users. Identify bottlenecks in Bedrock/Rekognition throttling and Aurora connections.
+
+## Feature Ideas (Prioritised)
+
+| Feature | Priority | Notes |
+|---------|----------|-------|
+| Real-Time Risk Escalation | High | Alerts to welfare contacts on high-risk detection, configurable thresholds, escalation workflow |
+| Investor Dashboard | Medium | Growth, adoption, revenue, platform health — no designs yet |
+| Text-Based Check-In | Medium | Chat alternative to voice for quiet environments |
+| Wellbeing Reports Enhanced | Medium | Needs therapist input for clinical appropriateness |
+| Voice Provider Abstraction | Low (R&D) | PersonaPlex self-hosted alternative — 100x cost reduction potential |
+| Multi-Language Support | Low | International student populations |
+| Peer Support Network | Low | Extension of buddy system |
+| API for Institutional Systems | Low | Anonymised data API, SSO, webhooks |
+
+## Completed (Feb 2026)
+
+Institutional Agents (Phases 1-3), Cohort Comparison Analytics, Wellbeing Reports V1, Automated Platform Monitoring, Jodie v2 Prompt Refinement, JWT Signature Verification, DB Connection Pooling, Input Validation Hardening, API Retry Logic, Docs Cleanup, Bedrock Model Upgrade (Claude 3.7 Sonnet), Shared Package Extraction (4 private NPM packages replacing monorepo plan — ~15,800 lines consolidated).
+
+## Known Technical Debt
+
+- `requireAuth()` in marketing CMS bypassed (hardcoded admin return) — temporary for staff access
+- Marketing CMS middleware excludes `/api/upload` from auth — intentional for hub proxy
+- **Pro hub and university hub do NOT have Vercel GitHub auto-deploy** — must deploy with `npx vercel --prod`
+- **Docs site (`mind-measure-docs`) does NOT have Vercel GitHub auto-deploy** — must deploy with `npx vercel --prod`
+- Mobile apps need push notifications (roadmap item)
+- Shared packages (`@mindmeasure/*`) need version management attention
+
+## Reference
+
+**Canonical platform context (agents and humans):** [Platform handbook](https://docs.mindmeasure.co.uk/architecture/platform-handbook) (`mind-measure-docs/pages/architecture/platform-handbook.mdx`)
+
+Full roadmap with detailed specs: `mind-measure-docs/pages/planning/roadmap.mdx`  
+Full technical future work: `mind-measure-docs/pages/future-development.mdx`
