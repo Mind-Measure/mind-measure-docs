@@ -1,18 +1,24 @@
-# Mind Measure — University Professional Handbook
+# Mind Measure: University Handbook & Operating Manual
 
-*Version 1.1 — March 2026*
+*Version 2.0, June 2026*
+
+This handbook is written for the wellbeing, student services, and professional teams who run Mind Measure inside a university. **Part A** explains what the platform is, the value it delivers, and what your students experience. **Part B** is a practical, step-by-step manual for the tasks your team performs day to day. **Part C** is a reference for architecture, features, and onboarding.
+
+<img src="/images/handbook/uni-dashboard-overview.png" alt="The Mind Measure university dashboard, showing the aggregated, anonymised wellbeing overview for an institution" style={{ width: '100%', borderRadius: '8px', margin: '1rem 0' }} />
 
 ---
 
+# Part A: Understanding Mind Measure
+
 ## 1. About Mind Measure
 
-Mind Measure is a multimodal conversational analytics platform designed to support student wellbeing in higher education. Through a brief daily conversation with an AI companion called Jodie, students receive a personalised wellbeing score that tracks their mental health over time — giving both the individual and their institution a clearer picture of how they are feeling.
+Mind Measure is a multimodal conversational analytics platform built to support student wellbeing in higher education. Through a brief daily conversation with an AI companion called Jodie, students receive a personalised wellbeing score that tracks how they are doing over time, giving both the individual and their institution a clearer picture of how they are feeling.
 
-The platform is **not** a diagnostic tool, a replacement for counselling, or a clinical intervention. It is a structured, evidence-informed monitoring system that helps universities identify emerging patterns, allocate resources more effectively, and support students before small concerns become serious problems.
+The platform is **not** a diagnostic tool, a replacement for counselling, or a clinical intervention. It is a structured, evidence-informed monitoring system that helps universities notice emerging patterns, allocate resources more effectively, and support students before small concerns become serious problems.
 
 ### What Mind Measure Is
 
-- A daily wellness check-in that takes 1–2 minutes
+- A daily wellness check-in that takes one to two minutes
 - A personal baseline assessment that establishes an individual's starting point
 - A dashboard for students to track their own wellbeing
 - An institutional analytics platform for aggregated, anonymised insights
@@ -22,10 +28,8 @@ The platform is **not** a diagnostic tool, a replacement for counselling, or a c
 
 - A medical device or clinical diagnostic tool
 - A replacement for professional mental health support
-- A surveillance tool — institutions never see individual conversations
+- A surveillance tool: institutions never see individual conversations
 - An app that collects location data, contact lists, photos, or browsing history
-
----
 
 ## 2. Our Philosophy
 
@@ -33,147 +37,313 @@ Mind Measure operates on a simple principle: **early awareness leads to better o
 
 Our approach is grounded in three commitments:
 
-**Privacy First** — Students own their data. Individual conversations and scores are never shared with universities. Institutions receive only aggregated, anonymised analytics at cohort level.
+**Privacy first.** Students own their data. Individual conversations and scores are never shared with universities. Institutions receive only aggregated, anonymised analytics at cohort level.
 
-**Evidence-Informed** — Our methodology draws on validated clinical screening instruments (PHQ-2, GAD-2) and peer-reviewed research into vocal biomarkers, facial expression analysis, and linguistic markers of wellbeing.
+**Evidence-informed.** Our methodology draws on validated clinical screening instruments (PHQ-2, GAD-2) and peer-reviewed research into vocal biomarkers, facial expression analysis, and linguistic markers of wellbeing.
 
-**Human-Centred Design** — Technology serves the conversation, not the other way around. Jodie's conversational style is warm, non-clinical, and adaptive. The experience is designed to feel like a brief check-in with a trusted companion, not a form to fill in.
+**Human-centred design.** Technology serves the conversation, not the other way around. Jodie's conversational style is warm, non-clinical, and adaptive. The experience is designed to feel like a brief check-in with a trusted companion, not a form to fill in.
 
----
+## 3. What your students do and see
 
-## 3. How It Works
+Your students use a mobile app. You never see their individual conversations or scores; this section is simply so you understand their experience.
 
-### The Student Experience
+### Their first time: the baseline
 
-#### Baseline Assessment
-When a student first uses Mind Measure, they complete a one-off baseline assessment lasting 5–10 minutes. During this conversation, Jodie asks a series of validated clinical screening questions alongside more open-ended prompts. This establishes the student's personal wellness baseline — a reference point against which all future check-ins are measured.
+The first time a student opens the app, they complete a one-off baseline assessment lasting five to ten minutes. Jodie asks a series of validated clinical screening questions alongside more open-ended prompts. This establishes the student's personal wellness baseline, the reference point against which all future check-ins are measured.
 
 The clinical screening includes:
-- **PHQ-2** — A two-question depression screening tool widely used in primary care (scored 0–6)
-- **GAD-2** — A two-question generalised anxiety screening tool (scored 0–6)
-- **Self-reported mood** — A single 1–10 scale question
+
+- **PHQ-2**: a two-question depression screening tool widely used in primary care (scored 0 to 6)
+- **GAD-2**: a two-question generalised anxiety screening tool (scored 0 to 6)
+- **Self-reported mood**: a single 1 to 10 scale question
 
 These instruments are internationally validated and recommended by NICE and the American Psychiatric Association for initial screening.
 
-#### Daily Check-ins
-After the baseline, students are encouraged to check in daily. Each check-in is a brief (1–2 minute) conversation with Jodie, who asks how they are feeling, follows up on themes from previous conversations, and gently explores what is going well and what might be troubling them.
+### Their daily rhythm: the check-in
 
-The conversation is natural and adaptive — Jodie remembers context from previous check-ins and adjusts her questions accordingly. Students speak naturally; there are no forms, scales, or multiple-choice questions in the daily check-in.
+After the baseline, students are encouraged to check in daily. Each check-in is a brief one-to-two-minute conversation with Jodie, who asks how they are feeling, follows up on themes from previous conversations, and gently explores what is going well and what might be troubling them. There are no forms, scales, or multiple-choice questions; students simply talk.
 
-#### The Mind Measure Score
-After each check-in, the platform computes a Mind Measure Score on a 0–100 scale. This score reflects the student's overall wellbeing based on a proprietary multimodal analysis of their conversation. The score is displayed on their personal dashboard alongside trends, themes, and positive drivers.
+### What they see afterwards
 
-**Score ranges:**
-| Range | Label | Dashboard Colour |
-|-------|-------|-----------------|
-| 80–100 | Excellent | Lilac |
-| 60–79 | Good | Teal |
-| 40–59 | Building momentum | Amber |
-| 0–39 | Support available | Coral |
+After each check-in the platform computes a **Mind Measure Score** on a 0 to 100 scale, reflecting the student's overall wellbeing based on a multimodal analysis of their conversation. It is shown on their personal dashboard with a wellbeing band:
 
-Students can also see:
-- **Mood trend** — A 7-day bar chart of self-reported mood
-- **Check-in streak** — How many consecutive days they have checked in
-- **Insight, enjoying, and worry summaries** — What they talked about in recent check-ins
-- **Previous check-in detail** — A comparison with their last conversation
+| Range | Label | Dashboard colour |
+|---|---|---|
+| 80 to 100 | Excellent | Lilac |
+| 60 to 79 | Good | Teal |
+| 40 to 59 | Building momentum | Amber |
+| 0 to 39 | Support available | Coral |
 
-#### Nudges
-Universities can send short, text-based nudges to students through the app. These are brief notifications directing students to available support — a workshop on exam stress, a wellbeing drop-in session, a finance advice clinic. Nudges are prioritised by urgency and displayed as a swipeable carousel on the student dashboard.
+Alongside the score, students see their mood trend, their check-in streak, short summaries of what they have been talking about, and a comparison with their previous check-in. They also receive the **nudges** and **alerts** you send, and they can generate their own downloadable **wellbeing report** covering their recent history.
 
-#### Cohort-Targeted Content
-Both nudges and articles can be targeted to specific student cohorts. When creating content, administrators choose between "Whole University" and "Specific Cohort". In cohort mode, cascading dropdowns allow selection by school, department, year group, accommodation type, hall of residence, and study mode. The system displays a live count of matching students, so the administrator can see exactly how many people will receive the content.
+## 4. The science behind the score
 
-This feature connects directly to the cohort analytics dashboards. If an administrator identifies a wellbeing trend in a particular group — for example, elevated stress in Nursing students during clinical placements — they can immediately create targeted support content that only reaches that specific group, without generating noise for the rest of the university.
+Mind Measure combines three complementary signals from each conversation:
 
-Content without targeting continues to be visible to all students.
+**Linguistic analysis**: what students say, and how they say it. The platform analyses sentiment, word choice, engagement, coherence, and the balance of positive and negative language. Patterns associated with depression, anxiety, and stress are identified using natural language processing.
 
-#### Pinning Content
-Any nudge or article can be pinned to the top of the student feed until a specified date. This is useful for time-sensitive content such as exam support resources, event promotions, or deadline reminders. When the pin date passes, the content automatically returns to its normal position in the feed — no manual intervention required.
+**Vocal analysis**: how students sound. Research links vocal characteristics including pitch variability, speaking rate, pause patterns, voice energy, and vocal quality to emotional state and wellbeing. These features are extracted and analysed in real time.
 
-### The Institutional Experience
+**Visual analysis**: how students present, where the camera is on. Facial expression analysis examines indicators such as smile frequency, eye contact, emotional valence, and overall engagement. These signals complement the linguistic and vocal data.
 
-#### University Dashboard
-University administrators access the institutional dashboard at a secure URL. This provides aggregated, anonymised analytics across the student population, including:
+A fusion algorithm combines these into the single score, weighting the most reliable and clinically relevant signals and coping gracefully when one is missing (for example, when the camera is off).
 
-- **Cohort wellbeing scores** — Average scores by department, year group, or custom cohort
-- **Trend analysis** — How scores are changing over time
-- **Engagement metrics** — Check-in frequency, active user counts
-- **Top themes** — What students are talking about (aggregated and anonymised)
-- **Risk indicators** — Proportion of students in each score zone
-
-No individual student data is visible to institutional users. All analytics are based on aggregated data with a minimum cohort size to prevent identification.
-
-#### Content Hub
-The University Content Hub is a companion platform where administrators can:
-
-- **Create and publish wellbeing articles** — Using a rich text editor to produce blog-style content
-- **Manage nudges** — Create, schedule, and prioritise short notifications for students
-- **Target content to specific cohorts** — Direct articles and nudges to particular student groups by school, department, year, accommodation, or study mode
-- **Pin content to the top of the feed** — Ensure time-sensitive material is seen first, with automatic expiry
-- **Browse the content pool** — Access articles shared by other universities and by Mind Measure
-- **View student insights** — See aggregated "Top 10" student worries and interests to inform content strategy
-
-The Content Hub is accessed directly from the institutional dashboard with seamless authentication — no separate login required.
-
----
-
-## 4. The Science Behind Mind Measure
-
-### Multimodal Analysis
-
-Mind Measure uses a multimodal approach to wellbeing assessment, combining three complementary data streams:
-
-**Linguistic Analysis** — What students say, and how they say it. The platform analyses sentiment, word choice, engagement, coherence, and the balance of positive and negative language. Specific patterns associated with depression, anxiety, and stress are identified using natural language processing.
-
-**Vocal Analysis** — How students sound. Research has established that vocal characteristics including pitch variability, speaking rate, pause patterns, voice energy, and vocal quality are associated with emotional state and wellbeing. These features are extracted and analysed in real time.
-
-**Visual Analysis** — How students present. Facial expression analysis examines indicators such as smile frequency, eye contact, emotional valence, and overall engagement. These signals complement the linguistic and vocal data.
-
-Each modality contributes to the final Mind Measure Score through a proprietary fusion algorithm. The weighting is designed to prioritise the most reliable and clinically relevant signals while gracefully handling situations where one or more modalities may be unavailable (for example, if a student's camera is off).
-
-### Research Foundation
+### Research foundation
 
 The assessment methodology draws on established research in:
 
-- **Clinical screening** — PHQ-2 and GAD-2 are validated screening instruments with extensive evidence bases
-- **Vocal biomarkers** — Peer-reviewed studies linking vocal characteristics to depression, anxiety, and stress
-- **Facial expression analysis** — Research on facial action coding systems and their relationship to emotional state
-- **Linguistic markers** — Studies on language patterns associated with psychological distress
+- **Clinical screening**: PHQ-2 and GAD-2 are validated screening instruments with extensive evidence bases
+- **Vocal biomarkers**: peer-reviewed studies linking vocal characteristics to depression, anxiety, and stress
+- **Facial expression analysis**: research on facial action coding systems and their relationship to emotional state
+- **Linguistic markers**: studies on language patterns associated with psychological distress
 
-### Important Limitations
+### Honest limitations
 
-- The Mind Measure Score is **not a clinical diagnosis**. It is a wellness indicator that should be interpreted alongside professional judgement
-- Audio and visual features are research-informed but have not yet undergone independent clinical validation as standalone diagnostic instruments
-- Technical factors (device quality, internet connection, ambient noise, lighting) can affect the quality of multimodal analysis
-- The platform requires regular use to build a meaningful picture — isolated check-ins should be interpreted with caution
-- Fusion algorithm weights represent initial calibration and will be refined through ongoing longitudinal validation
+- The Mind Measure Score is **not a clinical diagnosis**. It is a wellbeing indicator to be read alongside professional judgement.
+- Audio and visual features are research-informed but have not yet undergone independent clinical validation as standalone diagnostic instruments.
+- Technical factors (device quality, internet connection, ambient noise, lighting) can affect the quality of multimodal analysis.
+- The platform needs regular use to build a meaningful picture; isolated check-ins should be read with caution.
+- Fusion algorithm weights represent initial calibration and will be refined through ongoing longitudinal validation.
 
-### Ongoing Research
+### Ongoing research
 
-Mind Measure is committed to continuous validation and improvement. Research priorities include:
-- Longitudinal validation against established clinical measures (PHQ-9, GAD-7)
-- Population norms across different demographics and institutions
-- Algorithmic fairness and bias auditing across diverse populations
-- Refinement of scoring weights based on outcome data
+Mind Measure is committed to continuous validation and improvement. Research priorities include longitudinal validation against established clinical measures (PHQ-9, GAD-7), population norms across different demographics and institutions, algorithmic fairness and bias auditing, and refinement of scoring weights based on outcome data.
+
+## 5. Privacy and the separation principle
+
+Mind Measure is deliberately designed so that an institution cannot identify, monitor, or single out an individual student from their wellbeing data. This is the principle that makes the platform a benefit rather than surveillance.
+
+- **You never see individual conversations or individual scores.** Everything you see is aggregated.
+- **A minimum group size protects anonymity.** Aggregated views and conversational insight only reveal results once a group is large enough (at least five responses) that no individual can be inferred.
+- **Sensitive data is minimised and protected.** Audio is processed for analysis and not retained as recordings; data is encrypted in transit (TLS 1.3) and at rest (AES-256); administrative access requires multi-factor authentication.
+- **Students hold rights over their data** under UK GDPR, including access, rectification, erasure, and portability.
+
+> For the full security and compliance detail, see [Part C](#platform-architecture) below, the [platform handbook](/architecture/platform-handbook), and the [security section](/security/privacy).
 
 ---
 
-## 5. Security and Privacy
+# Part B: Using Mind Measure, step-by-step
 
-### Our Security Philosophy
+The guides below describe the tasks your team performs. On-screen labels are shown in **bold** so you can follow along in the product. Where a university has been configured with its own profile fields, some filter names will reflect your institution's terminology (schools, departments, halls of residence) rather than the defaults shown here.
 
-Mind Measure handles sensitive wellbeing data. We treat this responsibility with the same rigour as clinical systems, implementing medical-grade security controls throughout the platform.
+## 6. Reading your dashboard
 
-**Defence in Depth** — Multiple overlapping security layers ensure that no single failure compromises student data. Encryption, access controls, monitoring, and audit logging all work together.
+The university dashboard is your day-to-day view of how the student population is doing. It updates automatically (roughly once a minute) and never shows individual students.
 
-**Least Privilege** — Every user, system, and service has access only to the minimum data required for their function. University administrators cannot access individual student conversations. Aggregated data requires minimum cohort sizes.
+<img src="/images/handbook/uni-dashboard-overview.png" alt="The university Overview dashboard with the headline wellbeing score, live pulse metrics, the Where to look panel, the schools grid, and the trend and distribution charts" style={{ width: '100%', borderRadius: '8px', margin: '1rem 0' }} />
 
-**Privacy by Design** — Data minimisation is built into every feature. We collect only what is necessary, retain it only as long as required, and delete it when it is no longer needed.
+*The Overview at a glance: the headline score and band, the live pulse, the score and mood trend, the distribution donut, Where to look, and the per-school breakdown.*
 
-### Technical Security Measures
+### Getting oriented
+
+1. Sign in and you land on the **Overview**. The left sidebar offers **Overview**, **Cohort Analysis**, **Saved Dashboard**, and **CMS**.
+2. At the top, set the time window with **7 days**, **30 days**, or **90 days**. Every metric on the page responds to this.
+3. Use **Display** to switch to a large-screen "wall" layout (ideal for a team-room screen) and back to **Standard**.
+4. **Export** downloads the current view; **Refresh** pulls the latest figures; **Logout** signs you out.
+
+### What each section tells you
+
+Working down the Overview:
+
+- **Live pulse**: **Active today**, **Check-ins today**, **Completion rate**, and **Avg mood**, updating as students check in.
+- **Headline metrics**: **Mind Measure Score** (with its week-on-week change), **Self-Reported Mood**, **Active Today**, **Avg Streak**, **Completion Rate**, and **Response Quality**.
+- **7 Day Score & Mood Trend**: the score and self-reported mood plotted together over the window, with an **AI Q&A** option to ask plain-language questions of the data.
+- **Distribution**: a donut showing how the population splits across **Excellent**, **Good**, **Moderate**, and **Concerning**.
+- **Where to look**: the most important panel for action. It flags the schools or halls that need attention by wellbeing band and participation, and highlights a group **doing well**, with the change versus the previous period.
+- **Schools**: every school with its current score, the change **vs last week**, its standing **vs University Avg**, and its participation rate. **View all schools** expands the list.
+- **Positive Themes** and **Student Concerns**: what students are talking about, with concerns tagged **High**, **Medium**, or **Low** by how widespread they are.
+- **Halls of Residence**: top-performing accommodation by wellbeing score.
+- **Engagement Metrics**: **Daily Check-ins**, **Median Streak**, **Completion Rate**, and **Response Quality**.
+- **Conversational Insight**: a summary of your live questions (questions live, responses, response rate, overall sentiment) with a **Manage** link through to the Insight Hub (see [section 11](#11-the-conversational-insight-hub)).
+
+### Going deeper
+
+Many cards are clickable. Selecting **Positive Themes** or **Student Concerns** opens a detail view that can **Generate AI Insights** summarising the pattern and suggesting responses. Clicking a school in **Where to look** or the **Schools** grid opens a breakdown by department, year group, and study mode.
+
+**Reading the score bands:** Excellent (80+), Good (60 to 79), Moderate (45 to 59), Concerning (below 45). Treat **Where to look** and the **Student Concerns** list as your weekly action prompts, not the headline average.
+
+## 7. The Content Hub
+
+The Content Hub is where you publish wellbeing content to your students. It opens from your institutional dashboard with seamless authentication (no separate login) and lives at its own address. Its sidebar offers **Home**, **Your Articles**, **Content Pool**, **Nudges**, and **Student Insights**.
+
+<img src="/images/handbook/uni-content-hub.png" alt="The university Content Hub home page with curated student-welfare news, the latest published articles, and a summary of what students are saying" style={{ width: '100%', borderRadius: '8px', margin: '1rem 0' }} />
+
+*The Content Hub home: curated sector news, your latest articles, and an at-a-glance read of what students are talking about (Top Concerns and Top Interests, with a Rummidge versus National toggle) to guide what you write next.*
+
+### Writing and publishing an article
+
+1. Select **Write Article** (or go to **Your Articles** and select **New Article**).
+2. Set the **Audience**: **Whole University** (default) or **Specific Cohort** (see [targeting](#targeting-content-to-a-cohort)).
+3. Optionally turn on **Pin to top** to keep time-sensitive content at the top of the feed.
+4. Fill in **Title**, **Subtitle**, **Author**, and **Publish Date**. Title and author are required to publish.
+5. Add a **Cover Image** by URL or with **Attach**.
+6. Choose **Categories** and **Tags**.
+7. Optionally enable **Share to Content Pool** to make the article available to other institutions.
+8. Write the article in the **Content** editor; the right-hand **Preview** shows exactly how it will appear.
+9. Select **Save Draft** to hold it, or **Publish** to send it live.
+
+<img src="/images/handbook/uni-article-editor.png" alt="The article editor with audience, title, categories, and tags on the left, and a live article preview on the right" style={{ width: '100%', borderRadius: '8px', margin: '1rem 0' }} />
+
+*The article editor: set the audience, fill in the details, choose categories and tags, and write the body, while the right-hand Preview shows how it will look to students.*
+
+### Using the Content Pool
+
+The **Content Pool** is a library of articles shared by Mind Measure and other institutions.
+
+1. Open **Content Pool** and use the search box or category pills (Relationships, Wellbeing, Self-Care, Anxiety, In The News, Exam Stress, Resilience) to browse.
+2. Select **Import** on any article; it is copied into your library as a **draft**.
+3. Go to **Your Articles**, open the imported draft, personalise it for your students, and publish. A banner reminds you to credit the original author.
+
+<img src="/images/handbook/uni-content-pool.png" alt="The Content Pool grid of shared articles with category filters and an Import button on each card" style={{ width: '100%', borderRadius: '8px', margin: '1rem 0' }} />
+
+*The Content Pool: browse shared articles, filter by category, and Import any of them into your own library to personalise and publish.*
+
+## 8. In-app nudges
+
+Nudges are short, text-based prompts that point students toward help and resources: a workshop on exam stress, a wellbeing drop-in session, a finance advice clinic. They appear as a swipeable carousel on the student dashboard, prioritised by urgency.
+
+1. In the Content Hub, open **Nudges** and select **New Nudge**.
+2. Set the **Audience** (Whole University or Specific Cohort).
+3. Enter a **Headline** and a short **One-line description**.
+4. Choose a **Category**, which sets its priority in the feed.
+5. Optionally add an **Event Date**, and use **Pin to top** for time-sensitive items.
+6. Add the **Link URL** the nudge points to.
+7. Select **Create Nudge**.
+
+Your active nudges are listed so you can **Edit**, **Archive**, or reprioritise each one. When a pin date passes, content automatically returns to its normal position in the feed, with no manual intervention required.
+
+### Targeting content to a cohort
+
+Both articles and nudges share the same **Audience** control. Switch from **Whole University** to **Specific Cohort** and narrow with cascading dropdowns by **School**, **Department**, **Year group**, **Accommodation type**, **Hall of residence**, and **Study mode**. A live count shows how many students match as you refine the filters. Content with no targeting stays visible to everyone.
+
+This connects directly to the cohort analytics. If you spot a wellbeing trend in a particular group, for example elevated stress in Nursing students during clinical placements, you can immediately create targeted support content that only reaches that group, without generating noise for the rest of the university.
+
+## 9. Cohort Analysis
+
+Cohort Analysis lets you compare how different groups of students are doing side by side, for example first years against finalists, or one hall of residence against another. It opens from **Cohort Analysis** in the left sidebar.
+
+The groups you can build come straight from your own institution structure and profile fields, so the filters always reflect your terminology. The figures shown are aggregated and anonymised: a comparison only populates from real data once enough students in each group have checked in (the same minimum group size of five used everywhere else). Below that threshold, and in any demonstration, the charts show **illustrative sample data** so you can see how the tool behaves without exposing anyone.
+
+### Building a cohort
+
+1. In the **Build Cohort** panel, open any filter (for example **School**, **Department**, **Year group**, **Accommodation**, **Hall of residence**, or **Study mode**) and tick the values that define the group. Selecting more than one value within a filter widens the group; combining filters narrows it.
+2. Select **Add Cohort**. The group appears under **Selected Cohorts** with its own colour.
+3. Repeat to add more groups to compare (up to eight). Select any saved cohort to edit it, or use the **×** to remove it.
+
+### Comparing and reading the chart
+
+- **Metric**: choose what to compare: **Mind Measure Score**, **Mood Score**, **Engagement Rate**, or **Response Count**.
+- **Chart Type**: **Line** and **Area** show movement over time and add a **Time Range** control (**7d**, **30d**, **90d**); **Bar** and the others compare groups at a glance.
+- Each cohort keeps its colour across every chart, so you can follow a group as you change views.
+
+Read cohort comparisons as a prompt to look closer, not a verdict. A consistent gap between two groups over time is more meaningful than a single day's difference, and a small group's figures will always be the least reliable. Use **Save to Dashboard** to keep a comparison you return to often.
+
+> **Good to know:** because every figure is aggregated to groups of at least five, Cohort Analysis can never single out an individual. Very small groups simply will not produce a reliable comparison, which is the intended behaviour rather than a fault.
+
+## 10. The Alerts system
+
+Alerts are time-sensitive, university-wide messages that render as a card on every student's mobile dashboard within seconds. They are managed in the **Alerts** section of your university CMS.
+
+> For the full technical reference (severity tiers, audience targeting, data model, and the privacy guard-rails), see [Architecture: Institutional Alerts](/architecture/institutional-alerts).
+
+1. Open **Alerts** and select **New alert**.
+2. Choose a **Severity**:
+   - **Urgent**: safety. Campus closed, evacuation, shelter in place.
+   - **Welfare** ("We are thinking of you"): a supportive message after distressing news. **Requires support links.**
+   - **Notice** ("Heads up"): schedule change, fire alarm test, library hours.
+   - **Info** ("FYI"): welcome week event, careers fair, society launch.
+3. Enter a **Title** (up to 120 characters) and **Body** (up to 1000). Keep it plain and calm.
+4. Set the **Audience**: **Everyone**, or **Specific students** narrowed by faculty, year, residence, or any other student attribute. The screen shows roughly how many students the alert will reach.
+5. For a **Welfare** alert, add at least one **Support link** (for example, your Student Welfare team or out-of-hours service), up to three. The label and a `https://` or `tel:` destination are both required.
+6. Check the **mobile preview**, select **Send now**, and confirm at the **Send this alert?** prompt.
+
+**A built-in safeguard:** an alert cannot be sent to fewer than five matching students. If your filters narrow the audience below that, you will see **"Fewer than 5 students match"** and **Send now** stays disabled until you broaden it. This prevents an alert being effectively addressed to a single person.
+
+<img src="/images/handbook/uni-alert-new.png" alt="The New alert dialog showing the four severity tiers, title and body fields, audience reach of 1,800 students, and a mobile preview" style={{ width: '100%', borderRadius: '8px', margin: '1rem 0' }} />
+
+*The New alert dialog: pick a severity, write a plain title and body, set the audience (here Everyone, reaching 1,800 students), and check the live mobile preview before sending.*
+
+Each alert keeps a **reach** card once it is live, showing how many students it was sent to, how many have **seen** it, and how many have **dismissed** it. Live alerts can be archived early.
+
+## 11. The Conversational Insight Hub
+
+Conversational Insight lets you pose a natural-language question that Jodie weaves into matching students' check-ins, then read the anonymised themes in their answers. A survey replacement that does not feel like a survey. It is a paid add-on; once enabled, an **Open Insight Hub** card appears in your dashboard, and the hub lives at its own address.
+
+<img src="/images/handbook/uni-insight-hub.png" alt="The university Insight Hub home showing the most active question, response count, sentiment split, an AI-written summary, other live questions, the cohort divergence matrix, and recent quotes" style={{ width: '100%', borderRadius: '8px', margin: '1rem 0' }} />
+
+*The Insight Hub home: your most active question with its sentiment split and an AI-written summary of what students are telling you, your other live questions, the cohort divergence matrix, and a sample of recent anonymised quotes.*
+
+The Insight Hub sidebar offers **Home**, **Questions**, **Cohort Compare**, and **Archive**. At the top you can **Ask a new question**, **Export 30d CSV**, switch the window between **30d**, **90d**, and **1y**, and **Refresh**.
+
+### Authoring a question
+
+1. Select **Ask a new question**.
+2. In **Question**, phrase it the way you would say it aloud, for example *"How are you finding the new assessment schedule?"* (up to 350 characters).
+3. Optionally add **Internal notes** for your team. These are never shown to students or sent to Jodie.
+4. Choose how often Jodie asks: **When natural** (only if the conversation invites it) or **Every check-in** (use sparingly).
+5. Choose how long it runs: a set number of days, or **Until I archive it**. It auto-archives at the end; responses remain available.
+6. Choose **Who should be asked**: everyone, or a specific cohort. A live count shows how many students match.
+7. Select **Save draft** to hold it, or **Publish** to push it live to Jodie.
+
+### Reading the answers
+
+Once at least five students have answered, the Home view shows anonymised, aggregated **themes** under **What students are telling us**, an overall **sentiment** split, and a sample of paraphrased recent quotes under **Voice of the workforce**. Below that floor the hub shows **"awaiting more responses"** rather than risk identifying anyone.
+
+The **Cohort divergence** matrix shows which groups feel differently about each question, sliced by **Faculty / School**, **Year group**, **Living situation**, or **Study mode**. Cells with fewer than five responses are redacted for privacy.
+
+**Good to know:** each student is asked at most two custom questions per check-in, and never the same question twice. This stops cohorts being over-surveyed and keeps the conversation natural.
+
+### The cohort insight report
+
+From the Insight Hub you can run a **cohort insight report**: a structured, shareable summary comparing how different groups responded, with an AI-written narrative and recommended actions, ready to download as a PDF for your leadership team.
+
+## 12. Reporting
+
+Mind Measure produces reports for different audiences. None of them ever reveals an individual's score or conversation, and all of them respect the minimum group size of five.
+
+| Report | Who creates it | What it covers |
+|---|---|---|
+| **Individual wellbeing report** | The student, in the app | Their own recent history |
+| **Cohort insight report** | You, from the Insight Hub | How groups answered a question |
+| **Dashboard export** | You, from the dashboard | The current aggregated view |
+
+### The individual wellbeing report
+
+Students can generate their own downloadable wellbeing report from the mobile app, covering their recent check-in history with their score trend, themes, and a written summary. This is **theirs**: you do not trigger it and you never see it. It exists so that a student can keep a personal record or choose to share it with their GP or a counsellor.
+
+### The cohort insight report
+
+When you are running a Conversational Insight question, you can produce a **cohort insight report** from the Insight Hub: a structured, shareable PDF comparing how different groups responded, with an AI-written narrative and recommended actions. See [the Insight Hub](#11-the-conversational-insight-hub).
+
+---
+
+# Part C: Reference
+
+## Platform architecture
+
+Mind Measure is built on a cloud-native architecture designed for security, scalability, and reliability:
+
+- **Mobile application**: a native iOS and Android app (built with Capacitor) wrapping the check-in experience
+- **Institutional dashboard**: a secure web application for university administrators
+- **Content Hub** and **Insight Hub**: standalone web applications for content and conversational insight
+- **Backend services**: hosted on Amazon Web Services (AWS), providing enterprise-grade infrastructure
+- **Database**: Amazon Aurora Serverless v2 PostgreSQL with automatic scaling, encryption, and multi-availability-zone deployment
+
+### Infrastructure
+
+The platform runs on AWS and Vercel:
+
+- **Compute**: serverless functions that scale automatically with demand
+- **Storage**: Amazon S3 with AES-256 encryption for all stored objects
+- **AI services**: Amazon Bedrock for text analysis, Amazon Rekognition for visual analysis
+- **Conversational AI**: ElevenLabs multimodal engine for natural conversation
+- **Content delivery**: Amazon CloudFront CDN
+- **Authentication**: Amazon Cognito with multi-factor authentication
+
+### Security measures
 
 | Layer | Implementation |
-|-------|---------------|
+|---|---|
 | **Encryption in transit** | TLS 1.3 for all communications |
 | **Encryption at rest** | AES-256 for all stored data |
 | **Authentication** | Multi-factor authentication required for all administrative access |
@@ -185,159 +355,95 @@ Mind Measure handles sensitive wellbeing data. We treat this responsibility with
 
 ### Compliance
 
-Mind Measure is designed to meet the requirements of:
+Mind Measure is designed to meet the requirements of **UK GDPR** (full data subject rights), **HIPAA** (administrative, physical, and technical safeguards), and **SOC 2 Type II** (security, availability, processing integrity, confidentiality, and privacy).
 
-- **UK GDPR** — Full compliance with data subject rights including access, rectification, erasure, and portability
-- **HIPAA** — Administrative, physical, and technical safeguards for protected health information
-- **SOC 2 Type II** — Controls for security, availability, processing integrity, confidentiality, and privacy
+### What data is collected
 
-### What Data Is Collected
-
-| Data Type | Purpose | Retention |
-|-----------|---------|-----------|
+| Data type | Purpose | Retention |
+|---|---|---|
 | Account information (email, name) | Authentication and personalisation | Duration of account |
 | University affiliation | Routing to correct institutional dashboard | Duration of account |
 | Assessment responses and scores | Wellbeing tracking and trend analysis | As required by data retention policy |
 | Audio data | Real-time vocal analysis only | Processed and deleted within 24 hours |
 | Aggregated analytics | Institutional reporting | As required |
 
-### What Is Never Collected
+### What is never collected
 
-- Precise location data
-- Contact lists or address books
-- Photos or videos from the device (camera is used only during live conversation, no recordings stored)
-- Other app usage or browsing history
-- Any data used for advertising
+Precise location data; contact lists or address books; photos or videos from the device (the camera is used only during live conversation, with no recordings stored); other app usage or browsing history; any data used for advertising.
 
-### Student Privacy Rights
+## Features reference
 
-Under UK GDPR, students have the right to:
-- **Access** their personal data
-- **Rectify** inaccurate data
-- **Erase** their data ("right to be forgotten")
-- **Port** their data to another service
-- **Object** to specific processing
-
----
-
-## 6. Platform Architecture
-
-### Overview
-
-Mind Measure is built on a cloud-native architecture designed for security, scalability, and reliability:
-
-- **Mobile Application** — A progressive web application wrapped in a native iOS container, providing a native app experience with web deployment flexibility
-- **Institutional Dashboard** — A secure web application for university administrators
-- **Content Hub** — A standalone web application for content and nudge management
-- **Backend Services** — Hosted on Amazon Web Services (AWS), providing enterprise-grade infrastructure
-- **Database** — Amazon Aurora Serverless, providing automatic scaling and high availability
-
-### Infrastructure
-
-The platform runs entirely on AWS and Vercel infrastructure:
-
-- **Compute** — Serverless functions that scale automatically with demand
-- **Database** — Aurora Serverless v2 PostgreSQL with automatic scaling, encryption, and multi-availability-zone deployment
-- **Storage** — Amazon S3 with AES-256 encryption for all stored objects
-- **AI Services** — Amazon Bedrock for text analysis, Amazon Rekognition for visual analysis
-- **Conversational AI** — ElevenLabs multimodal engine for natural conversation
-- **Content Delivery** — Amazon CloudFront CDN for fast, secure content delivery
-- **Authentication** — Amazon Cognito with multi-factor authentication
-
-### Scalability
-
-The architecture is designed to scale from a single university pilot to nationwide deployment without architectural changes. Key scalability features include:
-- Automatic database scaling from 0.5 to 16 capacity units based on demand
-- Serverless compute that handles up to 1,000 concurrent assessment sessions
-- CDN caching for fast content delivery globally
-- Cost allocation per university for transparent billing
-
----
-
-## 7. Features Reference
-
-### Student Features
+### Student features
 
 | Feature | Description |
-|---------|-------------|
-| **Baseline Assessment** | One-off 5–10 minute assessment establishing a personal wellness baseline |
-| **Daily Check-in** | 1–2 minute conversation with Jodie, the AI companion |
-| **Mind Measure Score** | Personalised 0–100 wellbeing score updated after each check-in |
+|---|---|
+| **Baseline Assessment** | One-off five-to-ten-minute assessment establishing a personal wellness baseline |
+| **Daily Check-in** | One-to-two-minute conversation with Jodie, the AI companion |
+| **Mind Measure Score** | Personalised 0 to 100 wellbeing score updated after each check-in |
 | **Dashboard** | Visual summary of scores, trends, mood, and themes |
 | **Mood Tracking** | 7-day mood trend chart with daily comparison |
 | **Streak Tracking** | Consecutive check-in day counter to encourage regular use |
 | **Insight Summaries** | AI-generated summaries of what students discussed |
 | **Nudges** | University-curated notifications about available support, optionally targeted to specific cohorts |
+| **Alerts** | Time-sensitive university messages on the dashboard |
 | **Help Resources** | Quick access to emergency services, university support, and wellbeing resources |
 | **Buddy System** | Peer accountability feature for mutual wellbeing support |
 | **Wellbeing Report** | Downloadable PDF report covering assessment history and AI-generated insights |
 
-### Institutional Features
+### Institutional features
 
 | Feature | Description |
-|---------|-------------|
-| **University Dashboard** | Real-time aggregated analytics across student population |
-| **Cohort Analysis** | Filter and compare wellbeing data by department, year, or custom grouping |
-| **Trend Charts** | Visualise how cohort wellbeing changes over time |
-| **Engagement Metrics** | Track active users, check-in frequency, and adoption rates |
+|---|---|
+| **University Dashboard** | Real-time aggregated analytics across the student population |
+| **Cohort Analysis** | Filter and compare wellbeing data by school, year, residence, or custom grouping |
 | **Content Hub** | Create and publish wellbeing articles and resources, with optional cohort targeting |
-| **Nudge Manager** | Create, schedule, and prioritise notifications for students, with cohort targeting and pin-to-top |
-| **Cohort Targeting** | Direct content to specific student groups using cascading demographic filters with live audience count |
-| **Pin to Top** | Pin content to the top of the student feed until a specified date, with automatic expiry |
-| **Content Pool** | Share and access content across the university network |
-| **Student Insights** | Aggregated "Top 10" student worries and interests |
-| **Report Generation** | Downloadable reports for individual students (with consent) |
+| **Nudge Manager** | Create, prioritise, and pin notifications for students, with cohort targeting |
+| **Cohort Targeting** | Direct content to specific student groups using cascading filters with a live audience count |
+| **Content Pool** | Share and import content across the university network |
+| **Student Insights** | Aggregated Top Concerns and Top Interests to inform content strategy |
+| **Conversational Insight Hub** | Pose natural-language questions and read anonymised themes (paid add-on) |
+| **Alerts** | Send time-sensitive, university-wide messages with privacy safeguards |
+| **Report Generation** | Cohort insight reports and dashboard exports |
 | **User Management** | Role-based access control for institutional staff |
 
-### Administrative Features
+## University onboarding
 
-| Feature | Description |
-|---------|-------------|
-| **Superuser Dashboard** | Platform-wide monitoring and management |
-| **Security Dashboard** | Real-time security monitoring and compliance status |
-| **Cost Monitoring** | Usage analytics and budget tracking per university |
-| **System Health** | Service status, resource metrics, and backup management |
+### Getting started
 
----
+1. **Account setup**: creation of the institutional account with appropriate access levels
+2. **Configuration**: branding, school and department structure, and resource setup
+3. **Staff training**: a walkthrough of the dashboard, Content Hub, and Insight Hub
+4. **Student launch**: communication materials and app distribution
+5. **Ongoing support**: regular check-ins and analytics review
 
-## 8. University Onboarding
+Mind Measure operates as a standalone platform and does not require integration with existing university systems. Students register directly through the app using their university email address, and the platform automatically associates them with their institution.
 
-### Getting Started
+### Staff roles
 
-Onboarding a new university involves:
-
-1. **Account Setup** — Creation of institutional account with appropriate access levels
-2. **Configuration** — Branding, department structure, and resource setup
-3. **Staff Training** — Walkthrough of the institutional dashboard and content hub
-4. **Student Launch** — Communication materials and app distribution
-5. **Ongoing Support** — Regular check-ins and analytics review
-
-### Staff Roles
-
-| Role | Access Level |
-|------|-------------|
-| **University Admin** | Full dashboard, content hub, user management |
-| **Wellbeing Lead** | Dashboard analytics, content creation, nudge management |
+| Role | Access |
+|---|---|
+| **University Admin** | Full dashboard, Content Hub, Insight Hub, and user management |
+| **Wellbeing Lead** | Dashboard analytics, content creation, nudge and alert management |
 | **Department Head** | Department-level analytics (filtered view) |
+| **Content only** | Content Hub front door |
+| **Insight only** | Insight Hub front door |
 
-### Integration
-
-Mind Measure operates as a standalone platform and does not require integration with existing university systems. Students register directly through the app using their university email address. The platform automatically associates students with their institution.
+Choose the least access a person needs to do their job; you can change a role at any time.
 
 ---
 
-## 9. Support and Contact
+## Support and contact
 
 | Contact | Details |
-|---------|---------|
-| **General Enquiries** | hello@mindmeasure.co.uk |
-| **Privacy Enquiries** | privacy@mindmeasure.app |
-| **Technical Support** | support@mindmeasure.co.uk |
+|---|---|
+| **General enquiries** | hello@mindmeasure.co.uk |
+| **Privacy enquiries** | privacy@mindmeasure.app |
+| **Technical support** | support@mindmeasure.co.uk |
 | **Website** | [mindmeasure.co.uk](https://mindmeasure.co.uk) |
 | **Documentation** | [docs.mindmeasure.co.uk](https://docs.mindmeasure.co.uk) |
 
 ---
 
-*This handbook is intended for university professionals evaluating or implementing Mind Measure. It does not constitute medical advice. Mind Measure is a wellness monitoring platform, not a medical device. All clinical screening should be overseen by qualified health professionals.*
+*This handbook is for university professionals evaluating or implementing Mind Measure. It does not constitute medical advice. Mind Measure is a wellness monitoring platform, not a medical device. All clinical screening should be overseen by qualified health professionals.*
 
 *© 2026 Mind Measure Ltd. All rights reserved. This document is confidential and intended for the recipient only.*
