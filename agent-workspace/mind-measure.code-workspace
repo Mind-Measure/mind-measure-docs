@@ -1,0 +1,39 @@
+{
+  "folders": [
+    { "name": "core (uni admin + APIs)", "path": "mind-measure-core" },
+    { "name": "mobile (student app)", "path": "mind-measure-mobile-final" },
+    { "name": "university-hub", "path": "mind-measure-university-hub" },
+    { "name": "university-site", "path": "mind-measure-university-site" },
+    { "name": "university-insight-hub", "path": "mind-measure-university-insight-hub" },
+    { "name": "pro-core (corp admin + APIs)", "path": "mind-measure-pro-core" },
+    { "name": "pro-mobile (employee app)", "path": "mind-measure-pro-mobile" },
+    { "name": "pro-hub", "path": "mind-measure-pro-hub" },
+    { "name": "pro-insight-hub", "path": "mind-measure-pro-insight-hub" },
+    { "name": "mindmeasurepro (corp marketing)", "path": "mindmeasurepro" },
+    { "name": "marketing-cms", "path": "mind-measure-marketing-cms" },
+    { "name": "docs", "path": "mind-measure-docs" },
+    { "name": "student-marketing", "path": "mind-measure-student" },
+    { "name": "ops", "path": "mind-measure-ops" },
+    { "name": "pkg: shared-types", "path": "mindmeasure-shared-types" },
+    { "name": "pkg: shared-services", "path": "mindmeasure-shared-services" },
+    { "name": "pkg: shared-ui", "path": "mindmeasure-shared-ui" },
+    { "name": "pkg: api-lib", "path": "mindmeasure-api-lib" }
+  ],
+  "settings": {
+    "files.exclude": {
+      "**/.git": true,
+      "**/node_modules": true,
+      "**/.next": true,
+      "**/dist": true,
+      "**/build": true
+    },
+    "search.exclude": {
+      "**/node_modules": true,
+      "**/.next": true,
+      "**/dist": true,
+      "**/build": true,
+      "**/*.lock": true,
+      "**/package-lock.json": true
+    }
+  }
+}

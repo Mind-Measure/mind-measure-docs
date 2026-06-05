@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "hooks": {
+    "sessionStart": [
+      {
+        "command": "./hooks/mm-session-context.sh",
+        "timeout": 20
+      }
+    ]
+  }
+}

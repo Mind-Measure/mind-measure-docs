@@ -1,0 +1,61 @@
+---
+description: Read all relevant documentation before starting any new sprint, feature, or task in Mind Measure
+alwaysApply: true
+---
+
+# Session Start Protocol
+
+At the start of EVERY new chat session where work will be done, before writing any code, documentation, or plans:
+
+## 0. Establish ground truth (trust git over docs)
+
+The whole Mind Measure ecosystem is one multi-root workspace (`mind-measure.code-workspace`). Hand-written docs drift; recent work often is not yet in the handbook or rules. The signal of record for "what shipped" is **git commits**, and a `sessionStart` hook injects them automatically, so you usually start a session already current. If you did not see them, fetch them yourself before trusting any repo map or roadmap:
+
+- **`"./mm-recent.sh"`** from the workspace root: git ground truth (last commits per repo, most-recently-active first). Git cannot drift. This is the same commit signal that powers the Ops "Recently shipped" board (`business.mindmeasure.co.uk/board`).
+- **Human intent and in-flight plans** live on the Ops planning board (Build Now / Blocked / Upcoming / Done cards, with notes and spec links), not in a separate log file.
+- Then read **`AGENTS.md`** (canonical index) and the handbook for stable structure.
+- If the docs/rules disagree with git, **git wins** — and fix the drift (see "When work ships" below).
+
+## 1. Read core platform docs
+
+Always read these first, they define the codebase and constraints:
+
+- **`mind-measure-docs/pages/architecture/platform-handbook.mdx`**, single source of truth: repos, constraints, deploy model, session discipline, and links to deeper docs. Published at `https://docs.mindmeasure.co.uk/architecture/platform-handbook`.
+- `mind-measure-docs/pages/operations/hierarchy-of-help.mdx`
+- `mind-measure-docs/pages/operations/weekly-reflection-safeguards.mdx`
+- `mind-measure-docs/pages/operations/weekly-reflection.mdx`
+- `mind-measure-docs/pages/operations/weekly-reflection-runbook.mdx`
+
+## 2. Read directly relevant source files
+
+For any feature being touched, read the actual implementation files before producing output. Do not rely on documentation alone, the code is the truth.
+
+Examples:
+- Working on reflections → read `api/reflections/weekly.ts` in full
+- Working on audit panel → read `api/reflections/sends.ts` + `WellbeingSends.tsx`
+- Working on agents → read the relevant agent config and endpoint files
+- Working on DB → read the most recent migration files
+
+## 3. Read the policy docs if working on welfare/safeguarding
+
+- `mind-measure-docs/pages/operations/wellbeing-protection-policy.mdx`
+- `mind-measure-docs/pages/operations/wellbeing-protection-tech-spec.mdx`
+
+## 4. Check both university and pro repos
+
+If a change affects university, check if the pro repo needs the same change. They must be kept in parity unless explicitly told otherwise.
+
+## When work ships (keep the shared brain current)
+
+A feature is not "done" until the canonical surfaces match reality. Before ending a session where something shipped or a repo/domain/feature changed:
+
+1. Write a **clear conventional-commit message** (`feat:`, `fix:`, with a scope where useful). Commits are the signal of record: they feed `mm-recent.sh`, the session-start hook, and the Ops "Recently shipped" board, and the weekly docs run reads them. This is the lowest-friction capture, do it even if you do nothing else.
+2. Move the relevant **Ops board card to Done** and put any human-relevant detail / spec link in the card's notes. That is the intent layer the weekly docs run reads alongside commits.
+3. Add a 1-3 line entry to the **Recent work log** in `AGENTS.md` (newest first), so the next agent session sees it immediately via the session-start hook.
+4. Update `.cursor/rules/current-goals.mdc` and the **repo map** in both `platform-handbook.mdx` and `.cursor/rules/mind-measure-platform.mdc` if a repo, domain, or status changed (these are agent-facing and the weekly run does not touch them).
+
+This is the antidote to the drift that lets agents start a session ignorant of last week's work.
+
+## Rule
+
+Do not produce code, documentation, or architectural decisions until the relevant files above have been read in full. "I read part of it" is not sufficient. Equally: do not finish a shipping session without updating `AGENTS.md` and the affected canonical docs.
