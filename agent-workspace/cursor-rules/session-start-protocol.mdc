@@ -45,12 +45,25 @@ Examples:
 
 If a change affects university, check if the pro repo needs the same change. They must be kept in parity unless explicitly told otherwise.
 
+## When you start a task (put it on the board)
+
+The Ops planning board (`business.mindmeasure.co.uk/board`) is the human-visible intent layer. When you begin a real piece of work (anything beyond a trivial one-off), create a card so it is visible **in flight**, not just at ship time. Use the committed CLI in `mind-measure-ops` (it writes straight to the board database, no web login needed; credentials load from the repo's local env):
+
+```bash
+# from mind-measure-ops/
+node scripts/board.js create --title "Short task name" \
+  --column now --status in_progress --product uni|pro|both \
+  [--repo mind-measure-core] [--spec <doc url>]
+```
+
+Use `node scripts/board.js list` to find ids, and `node scripts/board.js start --id N` if a card already exists. Skip this only for trivial changes that will not outlive the session.
+
 ## When work ships (keep the shared brain current)
 
 A feature is not "done" until the canonical surfaces match reality. Before ending a session where something shipped or a repo/domain/feature changed:
 
 1. Write a **clear conventional-commit message** (`feat:`, `fix:`, with a scope where useful). Commits are the signal of record: they feed `mm-recent.sh`, the session-start hook, and the Ops "Recently shipped" board, and the weekly docs run reads them. This is the lowest-friction capture, do it even if you do nothing else.
-2. Move the relevant **Ops board card to Done** and put any human-relevant detail / spec link in the card's notes. That is the intent layer the weekly docs run reads alongside commits.
+2. Move the relevant **Ops board card to Done** (`node scripts/board.js done --id N` from `mind-measure-ops/`, or the web UI) and put any human-relevant detail / spec link in the card's notes (`--notes "..."`). That is the intent layer the weekly docs run reads alongside commits.
 3. Add a 1-3 line entry to the **Recent work log** in `AGENTS.md` (newest first), so the next agent session sees it immediately via the session-start hook.
 4. Update `.cursor/rules/current-goals.mdc` and the **repo map** in both `platform-handbook.mdx` and `.cursor/rules/mind-measure-platform.mdc` if a repo, domain, or status changed (these are agent-facing and the weekly run does not touch them).
 
