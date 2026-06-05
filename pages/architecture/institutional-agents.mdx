@@ -64,6 +64,7 @@ Three tables, created in migration `012_create_institutional_agents.sql` (shared
 | agent_name | TEXT | Display name for the agent |
 | status | TEXT | `draft`, `active`, or `paused` |
 | template_agent_id | TEXT | Which template this agent was cloned from |
+| personalisation | JSONB | Per-institution behavioural overlay `{ pacing, register, language_variant, addendum }`. NULL inherits the base prompt. Pro migration 034, university migration 024. |
 | created_by | TEXT | Superuser who created the agent |
 | created_at | TIMESTAMPTZ | |
 | updated_at | TIMESTAMPTZ | Auto-updated via trigger |
@@ -176,16 +177,50 @@ function buildAgentPrompt(
   basePrompt: string,
   institutionName: string,
   institutionType: 'university' | 'company',
-  questions: InstitutionalQuestion[]
+  questions: InstitutionalQuestion[],
+  personalisation?: AgentPersonalisation | null,
 ): string
 ```
 
 Constructs the full agent prompt by:
 
-1. Starting with the product-specific base prompt (`base_prompt_university` or `base_prompt_company`)
-2. Appending institutional context: *"You are speaking with students/employees from [name]..."*
-3. Adding **required** questions as *"You must find a natural moment to ask..."*
-4. Adding **optional** questions as *"Try to also explore..."*
+1. Prepending a **Current Session Context** block (see Session memory below)
+2. Adding the product-specific base prompt (`base_prompt_university` or `base_prompt_company`)
+3. Appending the **personalisation overlay** if the agent has one (see Conversation personalisation below)
+4. Appending institutional context: *"You are speaking with students/employees from [name]..."*
+5. Adding the `{{checkin_questions}}` placeholder block when the institution has active questions, with the rule that a woven-in question **replaces an exchange** rather than extending the check-in
+
+Both product lines (`mind-measure-core` and `mind-measure-pro-core`) share the same three-layer prompt construction; keep them in step when changing either.
+
+#### Session memory (live continuity)
+
+The base prompt names per-conversation variables but does not always substitute their values, so `buildAgentPrompt` injects an explicit **Current Session Context** block that renders them as `{{...}}` placeholders. The mobile app supplies the values at session start as ElevenLabs dynamic variables, so a returning user gets continuity (Jodie references last time and runs shorter) instead of a first-meeting experience.
+
+- University variables: `checkin_count`, `last_summary`, `last_themes`, `last_mood`, `mood_trend`, `days_since_checkin`, `time_of_day`.
+- Pro additionally supplies `user_background` (a Bedrock-generated portrait from the first check-in) plus profile context (company, division, seniority, office, work mode). Students have no `user_background` portrait, so the university block omits it by design.
+
+Empty values are treated as "not yet known" and never read aloud.
+
+#### Conversation personalisation (per-institution overlay)
+
+`AgentPersonalisation` is a lightweight behavioural overlay stored on `institutional_agents.personalisation`:
+
+```typescript
+interface AgentPersonalisation {
+  pacing?: 'brief' | 'standard' | 'in_depth';
+  register?: 'warm_peer' | 'formal' | 'relaxed';
+  language_variant?: string; // e.g. "UK English"
+  addendum?: string;         // short behavioural note, max 1000 chars
+}
+```
+
+- It is **behavioural only**. Cultural context, local resources and factual content belong in the knowledge base, never here.
+- It is composed into the prompt at sync time by `buildAgentPrompt`, so it **survives Sync All** (Sync All no longer flattens per-institution tuning).
+- `standard` pacing emits no override (it is the base default). `brief` targets two to four exchanges; `in_depth` six to eight.
+- It never overrides safety, crisis handling, or the session-memory rules.
+- Edited in the superuser **Agents** tab → **Conversation Personalisation** panel, which writes via `PATCH /api/agents/update` and immediately re-syncs the agent.
+
+> The standalone "Custom Questions" panel has been removed from the superuser Agents tab on both products. Question authoring now lives in the institution's CMS / Insight Hub (see Custom Questions below).
 
 ---
 
@@ -200,7 +235,8 @@ The base operational prompt for Jodie is managed separately for each product lin
 3. **Sync**: When a superuser clicks "Sync All Agents", the system:
    - Loads the appropriate base prompt for each agent's `institution_type`
    - Fetches active questions for each agent
-   - Calls `buildAgentPrompt()` to construct the full prompt
+   - Reads the agent's `personalisation` overlay (if any)
+   - Calls `buildAgentPrompt()` to construct the full prompt (session memory + base + overlay + questions)
    - Pushes the prompt to ElevenLabs via `updateAgentPrompt()`
    - Refreshes the knowledge base URL via `addKnowledgeBaseUrl()`
 
