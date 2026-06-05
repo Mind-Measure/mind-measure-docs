@@ -37,7 +37,14 @@ uniqueness before saving.
 | 2.1 HR / programme owner | Settings → Primary contact | `companies.contact_email`, `contact_phone` |
 | 2.2 Welfare lead | Emergency Resources → Primary welfare contact | `emergency_contacts` JSONB |
 | 2.3 IT contact | *(internal, Cognito, email deliverability)* | n/a |
-| 2.4 MHFAs | Emergency Resources → Mental Health First Aiders | `emergency_contacts` JSONB |
+| 2.4 MHFAs / mental health advocates | Organisational Structure → Offices → Mental Health Advocates (per office) | `companies.offices[].mentalHealthAdvocates` |
+
+Advocates are now attached to the office they cover, mirroring the **Site Lead**
+field, so Jodie can reassure an employee that there is a trained person at their
+location. Each advocate takes a name, optional email/phone, and an optional
+coverage note (e.g. "Tax team, floors 3-5"). For a company-wide first-aider with
+no specific office, you can still add a card under Emergency Resources, but prefer
+the per-office list where you know the location.
 
 ### Section 3: Org structure
 
@@ -99,11 +106,20 @@ If you need an immediate non-DB override (testing, demos), also add to
 
 | Question | CMS field | DB column |
 |---|---|---|
-| 6.1 EAP | Emergency Resources → EAP card | `mental_health_services` JSONB |
+| 6.1 EAP | Emergency Resources → **EAP** tab | `companies.settings.eap[]` JSONB |
 | 6.2 HR support | Emergency Resources → HR | `emergency_contacts` JSONB |
 | 6.3 Occupational health | Emergency Resources → Occupational Health | `mental_health_services` JSONB |
 | 6.4 Manager escalation paragraph | Hierarchy of Help → step 1 description | `companies.hierarchy_of_help` JSONB |
-| 6.5 Other programmes | Emergency Resources → custom cards | `local_resources` JSONB |
+| 6.5 Other wellbeing programmes | Emergency Resources → **EAP** tab (add a programme) | `companies.settings.eap[]` JSONB |
+
+The dedicated **EAP** tab carries descriptive fields (tagline, description,
+what they offer, how to access) alongside the contact details, so Jodie can
+introduce a programme conversationally rather than just reciting a number, e.g.
+*"did you know your company subscribes to OpenUp..."*. Use the **enabled** toggle
+to control whether a programme is shared with Jodie. EAP entries are stored on
+`companies.settings.eap` and merged on save, so they do not affect other settings
+keys (allowed email domains, locale, welfare contact). This is a Pro-only area;
+universities list campus-based services instead.
 
 ### Section 7: External crisis support
 
@@ -163,13 +179,16 @@ launch.
 1. **Create the company shell**, Superuser → Companies → New. Paste
    sections 1.1-1.6 and the slug.
 2. **Org structure**, Organisational Structure tab. Paste section 3.1
-   (divisions and their departments) and section 3.2 (offices).
+   (divisions and their departments) and section 3.2 (offices). While you
+   are here, add any per-office mental health advocates from section 2.4.
 3. **Employee fields**, paste any customer overrides from
    section 4. If the customer didn't change anything, the corporate
    default from migration 013 is already in place. Use "Reset to
    recommended" in the editor to restore that default at any time.
 4. **Allowed email domains**, Settings tab. Paste section 5.1 and 5.2 in.
-5. **Emergency Resources**, paste sections 6.1, 6.2, 6.3, 6.5 and 7.
+5. **Emergency Resources**, paste sections 6.2, 6.3 and 7 into their cards,
+   and sections 6.1 and 6.5 into the **EAP** tab (one entry per programme,
+   with the descriptive fields completed so Jodie can offer them naturally).
 6. **Hierarchy of Help**, paste section 8.
 7. **Custom Jodie questions**, Institutional Agents tab. Paste section 9.
    Confirm Jodie regeneration succeeded.

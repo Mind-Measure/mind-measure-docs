@@ -242,9 +242,20 @@ The `/api/agents/context` endpoint generates a plain-text knowledge document fro
 **Data sources** (already collected during CMS onboarding):
 - Emergency and crisis resources
 - Wellbeing centres and support services
-- Key contacts (welfare officers, mental health first aiders)
-- Departments and faculties
-- EAP details (for companies)
+- Locale and cultural context, and the internal welfare contact (routing only)
+- Departments, divisions, and offices
+- Mental health advocates per office (Pro), read from `companies.offices[].mentalHealthAdvocates`
+- EAP and wellbeing programmes (Pro), read from `companies.settings.eap[]`
+- Universities surface their own campus-based resources instead of the Pro EAP/advocate fields
+
+**Pro EAP and advocates (added June 2026).** Companies record advocates against
+each office (mirroring the office Site Lead) and Employee Assistance Programmes in
+a dedicated **EAP** tab. EAP entries carry descriptive/narrative fields (tagline,
+description, what they offer, how to access, cost) so `/api/agents/context` can
+render them as conversational framing rather than a bare contact line, letting
+Jodie say things like *"did you know your company subscribes to OpenUp..."* without
+implying the employee pays. The `enabled` flag per programme gates whether it is
+shared with the agent.
 
 When CMS data is updated, the context URL serves the latest content. ElevenLabs re-indexes automatically.
 
@@ -305,4 +316,4 @@ Shipped in Phase 3 of v1, enhanced in v2:
 
 ---
 
-*Last updated: 20 May 2026*
+*Last updated: 5 June 2026*
