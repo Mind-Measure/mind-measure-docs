@@ -1,6 +1,9 @@
 {
   "title": "Operations",
   "playbooks": "Operational Playbooks",
+  "sop-technical-operations": "SOP — Technical Operations (internal)",
+  "sop-client-onboarding": "SOP — Client Onboarding (internal)",
+  "sop-commercial-process": "SOP — Commercial Process (internal)",
   "company-intake": "Company Onboarding Questionnaire",
   "company-intake-internal": "Company Intake — Internal Import (staff only)",
   "coding-standards": "Coding Standards",
