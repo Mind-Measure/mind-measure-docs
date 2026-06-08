@@ -1,0 +1,99 @@
+# Weekly Reflection for Pro (Employee) — Spec
+
+> **Status:** Draft spec, pre-build. Author: platform. Date: June 2026.
+> **Product:** Pro (corporate / employee).
+> **Counterpart:** the live University reflection — see [Weekly Reflection](/operations/weekly-reflection) and [Safeguarding Policy](/operations/weekly-reflection-safeguards).
+
+## Purpose
+
+Give the **employee** a personalised weekly reflection, the Pro equivalent of the student reflection: a Sunday editorial email plus web view that summarises their week through their Jodie conversations (mood trend, patterns, a win, a forward prompt).
+
+This is a **new employee-facing surface for Pro**. It is not the same as the existing Pro weekly summary (`api/reports/weekly-summary.ts`, `WeeklySummaryDialog.tsx`), which is the **company/HR-facing anonymised aggregate** and stays exactly as it is. The reflection is individual, private to the employee, and the employer never sees it.
+
+## Why it is mostly a port
+
+The University pipeline transfers almost directly:
+
+- Generation: Bedrock (Claude 3.7 Sonnet) → `content_json` → email + HMAC-signed web view.
+- Schema: `weekly_reflection_sends` (now live in the uni `mindmeasure` DB; verified June 2026) ports to the Pro `mindmeasurepro` DB keyed by `company_id`.
+- Cron pattern: Pro-core already runs Vercel crons (`vercel.json`); add a Sunday slot.
+- SES: already wired in Pro-core.
+- Safeguard scaffolding: the pre-send safety checks (score threshold, keyword scan, Bedrock flag) port unchanged.
+
+The work is adaptation, not invention. The estimate below reflects that.
+
+## What is NOT a copy-paste (the decisions)
+
+These three are the reason this needs a spec and sign-off before code, not a "yes, port it".
+
+### 1. Consent posture — the real gate
+
+A university emailing a student about their mental health and an **employer-adjacent system emailing an employee** about theirs are different risk classes, even though in both cases the send is individual and the employer never sees the content.
+
+**Recommendation: explicit opt-in for Pro, not opt-out.**
+
+| | University (live) | Pro (proposed) |
+|---|---|---|
+| Default | Opted in; in-email unsubscribe | **Opted out; explicit opt-in required** |
+| Flag | `profiles.weekly_reflection_opted_out` (default FALSE) | `profiles.weekly_reflection_opted_in` (default FALSE) |
+| Where | n/a | Employee app settings + onboarding |
+
+Rationale: in an employment context the legitimate-interests basis is weaker and the optics of an unsolicited "here is your mental health week" email landing on a work-linked account are bad. Opt-in is cleaner legally and better for trust. It also means the cohort is self-selected and engaged, which suits a dark launch.
+
+### 2. Escalation / Level 4 — do NOT disclose to the employer
+
+On University, a Level 4 compound trigger routes an identified disclosure to the university **safeguarding contact** (designed, not yet built). **Do not replicate that to the employer on Pro.** An employer receiving identified mental-health data about a named employee is an employment-law and trust hazard and would poison adoption.
+
+**Recommendation for Pro Level 4 routing:**
+
+- The employer is **never** the recipient of identified disclosure.
+- High-risk signals route to the company's **EAP** (external clinical provider) and/or to **Mind Measure staff** for review, using the EAP/advocate signposting data that already feeds Jodie (`api/agents/context.ts`, `src/data/supportResources.ts`).
+- Held reflections behave exactly as University: a held reflection is never sent; the hold is logged.
+- The full compound-trigger engine is **out of scope for v1** (it is unbuilt on University too, pending clinical sign-off). Pro v1 ships the pre-send holds only.
+
+### 3. Content, signposting and branding
+
+- **Signposting:** EAP and per-office mental-health advocates, not university welfare/hierarchy-of-help. The Pro CMS already models both: EAP / wellbeing programmes via `EmergencyResourcesManager` (stored on `companies.settings.eap` JSONB, each with a "Shared with Jodie" toggle) and per-office mental-health advocates via the org-structure editor (`mentalHealthAdvocates` on each office). This is the same data that feeds Jodie's signposting.
+- **Branding:** Pro navy (`#2B3A52` / accent `#6B8DB2`), not the uni teal/coral.
+- **Sender:** `noreply@mindmeasurepro.com` (reply-to `info@mindmeasurepro.com`). The `mindmeasurepro.com` domain is already SES-verified and live in production for Pro auth (6-digit access codes, `api/auth/send-access-code.ts`), company invites and reports. No new SES setup is needed.
+- **Tone:** workplace-appropriate ("your week", wellbeing, not student-life framing). New prompt version namespace `pro_v1.0`.
+
+## GDPR basis (Pro)
+
+| Activity | Proposed basis |
+|---|---|
+| Generating + emailing the reflection | **Explicit consent** (opt-in), Art 6(1)(a) / Art 9(2)(a) |
+| Storing safety audit data | Legitimate interests + substantial public interest (Art 9(2)(g)) |
+| Routing high-risk signals to EAP / Mind Measure | Explicit consent at opt-in; vital interests (Art 9(2)(c)) as fallback |
+
+In some jurisdictions an employee-facing wellbeing programme touches works-council / employee-representative consultation. Flag for the DPA addendum; not a blocker for a UK dark launch but must be in the customer-facing posture before wide rollout.
+
+## Phased plan
+
+1. **Spec sign-off (this doc).** Confirm the three decisions above — chiefly opt-in and no-employer-disclosure.
+2. **Schema.** `mind-measure-pro-core/migrations/036_weekly_reflection.sql` — port `weekly_reflection_sends` keyed by `company_id`, add `profiles.weekly_reflection_opted_in`, add `companies.weekly_reflection_enabled` (per-company gate, default FALSE, mirroring `conversational_insight_enabled` in `031`). Additive + idempotent.
+3. **Pipeline.** Port `api/reflections/weekly.ts` + `view.ts` + `unsubscribe.ts` (becomes opt-out-of-opt-in) into pro-core with Pro content, branding, EAP signposting, `pro_v1.0` prompt, and pre-send holds. No employer disclosure path.
+4. **Gating + cron.** Per-company `weekly_reflection_enabled` flag; add Sunday cron to pro-core `vercel.json`. Dark-launch to **SGR (`sgr-uk`)** first; review test sends before enabling any real customer.
+
+### Pre-launch data setup (SGR)
+
+The Pro DB currently has two companies (PwC Middle East, SGR), and **neither has any EAP programmes or wellbeing URL configured** (verified June 2026). Before the SGR dark launch, mock realistic signposting data via the Pro CMS so the reflection's "where to get help" section is non-empty:
+
+- Add one or two EAP / wellbeing programmes to SGR (e.g. OpenUp, Health Assured) with the "Shared with Jodie" toggle on (`companies.settings.eap`).
+- Optionally add a mental-health advocate or two to an SGR office (org-structure editor).
+- No schema work — this is CMS data entry only.
+
+## Out of scope for v1
+
+- Compound trigger engine and automated escalation pipeline (unbuilt on University too).
+- PDF export (web view + print is enough for v1).
+- Works-council consultation flows (documented, handled per-customer in onboarding).
+
+## Resolved decisions (June 2026)
+
+1. **Opt-in, not opt-out** for Pro. Confirmed.
+2. **No identified disclosure to the employer, ever.** Confirmed. High-risk signals route to the company EAP and/or Mind Measure; held reflections are never sent.
+3. **Sender:** `noreply@mindmeasurepro.com` (already SES-verified and live for Pro auth). No new SES setup required.
+4. **Dark-launch company:** SGR (`sgr-uk`). Mock EAP + advocate data via the Pro CMS first (see "Pre-launch data setup" above).
+
+All four open questions are now closed; the spec is ready for build.
