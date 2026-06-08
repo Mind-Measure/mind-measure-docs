@@ -1,386 +1,115 @@
 # Product Roadmap
 
-A living document capturing feature ideas, product concepts, and development priorities. This is the single source of truth for "what's next" across the Mind Measure platform.
+The single source of truth for what is shipped, in build, and under consideration across the Mind Measure platform. The two product lines (University and Pro) share one engine but have distinct near-term priorities, so they are tracked separately below, with cross-platform and engineering work pulled into its own section.
 
-For technical/engineering work in progress, see [Future Development](/future-development).
+For lower-level technical work in progress, see [Future Development](/future-development).
 
-**Last Updated**: May 2026
-
----
-
-## Active Planning
-
-### Institutional Alerts
-
-**Priority**: High — PwC ME pilot driver
-**Status**: Phase 1 shipped. Phase 2 (audience targeting) in build.
-
-A broadcast channel from company admins into the mobile app — severity-tagged messages that render as a prominent card on the dashboard (below the score, above the check-in button) and fire push notifications for higher tiers. Initial driver is the PwC Middle East trial: staff need a single source of truth for whether the office is open, and the wellbeing app is the right surface because it's already installed and not noisy with marketing. Used carefully this turns the app into a daily-driver and lifts every downstream engagement metric.
-
-Four severity tiers (welfare / info / notice / urgent) with distinct visual treatment, push behaviour, and dismiss rules. Welfare-tier alerts must ship with support links so the channel reinforces — rather than dilutes — the wellbeing posture. Reach is exposed to admins as anonymous aggregate counts, never named lists.
-
-Full spec: [Institutional Alerts](/planning/institutional-alerts).
+**Last Updated**: June 2026
 
 ---
 
-### Conversational Insight v2 — Cohort Filtering + Always-On Dashboard
+## How to read this
 
-**Priority**: High — extends the highest-engagement paid-tier feature
-**Status**: Phase 1 (schema + authoring) and Phase 2 (dashboard surface + CTA wiring) shipped to both products. Phase 4 (per-session prompt override into mobile) pending sign-off — the schema and resolver are live but nothing is being asked yet because the mobile check-in still uses the agent's stored prompt.
+**Status** values:
 
-v1 shipped the primitive (three live questions per institution, everyone gets all three). v2 lifts three real constraints: every employee/student got every question regardless of relevance; the dashboard hid the feature when no questions were configured; and admins were limited to a 3-question library that was a poor fit for institutions wanting to run themed pulses over a quarter.
-
-What's now live in production:
-
-- Audience targeting using the same `AudiencePicker` Alerts uses. Defaults to `{ all: true }` so v1 questions auto-resolve. Live reach estimate in the compose dialog with k-anon clamp at 5.
-- Per-user ask-once rotation via `institutional_question_asks` (schema + resolver only — the check-in path that calls the resolver is Phase 4). Silence honoured: an asked-but-unanswered question rotates off that user's eligible pool.
-- True anonymity for responses — `user_id` dropped from `institutional_question_responses` in migration 030 (pro) / 021 (uni). Aggregate answers are now permanent institutional intel that survives staff turnover.
-- Library cap raised from 3 → soft warn at 50 / hard cap at 200 active questions. The per-user ceiling moves to the resolver (2 per check-in).
-- Always-on dashboard card on the Overview, replacing the v1 "hide if empty" behaviour. Empty state CTA lands in one click on the CMS Questions tab. Each live question shows Asked / Answered / Cohort running stats.
-
-What's NOT live yet:
-
-- **Phase 4**: per-session prompt override that calls `pickQuestionsForUser` and passes the result as `overrides.agent.prompt` to ElevenLabs. Until this ships, every question still goes to every matching user via the agent's stored prompt (v1 behaviour preserved as the fallback). Touches the check-in code path — pending explicit sign-off before building.
-- **Phase 5** (deferred): archive snapshot + CSV export of aggregate question data, per-user exposure stats on the library counters, thread comparison view across runs of the same question.
-
-Full spec: [Conversational Insight v2](/planning/conversational-insight-v2).
+| Status | Meaning |
+|---|---|
+| Shipped | Live in production |
+| In build | Actively being built this sprint |
+| Next sprint | Specced and queued |
+| Planned | Agreed, not yet specced in detail |
+| Concept | Idea captured, spec to be written |
+| Research | R&D / feasibility only |
+| Deferred | Intentionally parked for now |
 
 ---
 
-### Weekly Reflection — Production Wiring
+## University — roadmap
 
-**Priority**: High
-**Status**: Phase 1 complete — production wiring in progress
-
-A personalised editorial email sent every Sunday summarising each student's week through the lens of their Jodie conversations. Phase 1 (email pipeline, web view, PDF, share card, safeguarding infrastructure) is live. Production wiring is the next sprint.
-
-**Completed (Phase 1)**:
-- Full email template — narrative, SVG chart, highlights, Jodie observation, word cloud, articles, events, closing CTA
-- Web view (HMAC-signed URL), PDF via print CSS, share card
-- Safeguarding infrastructure — keyword scan, Bedrock safety flag, score threshold hold, audit trail, prompt versioning
-- Documentation — feature docs, safeguarding policy, operations runbook
-
-**Remaining work**:
-- Welfare-modified reflection for negative-only weeks (Tier 2 — student-facing only, no external sign-off required)
-- Opt-out toggle in mobile app settings
-- Tier 0 nudge — gentle email/push when student hasn't checked in for 7+ days
-- Superuser audit panel — Wellbeing Sends view for Mind Measure staff
-- Jodie prompt improvements (see below)
-- Pro parity — same pipeline in `mind-measure-pro-core` once university is validated
-
-**Documentation**: [Weekly Reflection](/operations/weekly-reflection) · [Safeguards](/operations/weekly-reflection-safeguards) · [Runbook](/operations/weekly-reflection-runbook)
+| Initiative | Priority | Status | Summary |
+|---|---|---|---|
+| Weekly Reflection (production wiring) | High | In build | Personalised Sunday email summarising each student's week through their Jodie conversations. Phase 1 live: email, web view, PDF, share card, safeguarding infrastructure, mobile opt-out, and the superuser audit panel. Remaining: Tier 0 inactivity nudge and the welfare-modified reflection for negative-only weeks. [Spec](/operations/weekly-reflection) · [Safeguards](/operations/weekly-reflection-safeguards) · [Runbook](/operations/weekly-reflection-runbook) |
+| Welfare monitoring (Tiers 2/3 escalation) | High | Foundation shipped; escalation pending sign-off | Tiered response framework beneath the reflection. Keyword scan, Bedrock safety flag, score thresholds and full audit trail are live. Tier 2/3 escalation to university welfare contacts (GDPR vital interests) awaits clinical review of thresholds and legal review of the disclosure basis. [Policy](/operations/weekly-reflection-safeguards) |
+| Cohort Template Library | High | Next sprint | Turn one-off cohort comparisons into a shared, live-data template library scoped to each institution. Migrates `localStorage` views to a `saved_cohort_templates` table, adds custom titles and author attribution, publish-to-library, live data on load, and a historical overlay across time periods. |
+| Student Ambassador Platform | High | Concept | Ambassador signup and onboarding, branded social-asset library, referral tracking, payout dashboard and admin management, to drive organic student acquisition through peer networks. |
+| Jodie prompt improvements (university) | Medium | Planned | Additive prompts (named events, sleep/energy probe, positive anchor, social-connection probe, week framing) that enrich the data feeding the Weekly Reflection. Requires a prompt version bump and regression testing; does not change the check-in structure. |
+| Streak rewards | Medium | Under review | Voucher rewards for consistent check-ins. On hold pending a mechanism that reinforces intrinsic motivation rather than undermining it. Revenue case (retailer sponsorship) remains valid; revisit once Weekly Reflection engagement data is available. |
+| Peer support network | Low | Future | Evolve the buddy system into trained peer supporters with guided conversation prompts and an institutional feedback loop. |
 
 ---
 
-### Welfare Monitoring System
+## Pro — roadmap
 
-**Priority**: High
-**Status**: Foundation built — Tiers 2/3 escalation pending clinical and legal sign-off
-
-A tiered response framework that sits beneath the Weekly Reflection and acts throughout the week, not just on Sundays.
-
-| Tier | Signal | Action |
-|---|---|---|
-| 0 | No check-ins for 7+ days | Gentle nudge to student only |
-| 1 | Single score < 25 or crisis keywords | In-app message + crisis resources; internal Mind Measure log |
-| 2 | Pattern: 3+ check-ins all < 40 | Mid-week welfare nudge + modified Sunday reflection |
-| 3 | Week avg < 25 or explicit crisis language | Reflection held; university welfare contact notified (GDPR vital interests) |
-
-**Foundation already built**: keyword scan, Bedrock safety flag, score thresholds, `welfare_nudges_sent` table, full audit trail in `weekly_reflection_sends`.
-
-**Pending sign-off before Tier 2/3 automation**: clinical review of score thresholds, legal review of DPA terms and vital interests basis for Tier 3 disclosure. See [Safeguarding Policy](/operations/weekly-reflection-safeguards).
+| Initiative | Priority | Status | Summary |
+|---|---|---|---|
+| Institutional Alerts | High | Phase 1 shipped; Phase 2 in build | Severity-tagged broadcast channel from company admins into the employee app (welfare / info / notice / urgent), with push notifications for higher tiers. Driven by the PwC Middle East pilot, where staff need a single source of truth for whether the office is open. Phase 2 adds audience targeting; welfare-tier alerts always ship with support links. Reach exposed as anonymous aggregate counts only. [Spec](/planning/institutional-alerts) |
+| Weekly Reflection (Pro) | High | Shipped (Jun 2026) | Same reflection pipeline as university, brought to parity in `mind-measure-pro-core`, with a superuser toggle, opt-in gating, and an opt-in toggle in the employee app settings. |
+| Mental health advocates + structured EAP | Medium | Shipped (Jun 2026) | Per-office mental health advocates and structured EAP programmes feeding Jodie's signposting knowledge, so employee-facing support routing matches each employer's provision. |
 
 ---
 
-### Jodie Prompt Improvements
+## Cross-platform & engineering
 
-**Priority**: Medium
-**Status**: Planned — building after welfare reflection is stable
+Work that spans both product lines, or sits in the shared engine and tooling.
 
-The quality of the Weekly Reflection depends directly on what Jodie surfaces in conversation. Proposed additions to `jodie_prompt_v2_uni.md`:
-
-- **Named events** — "What's one specific thing that happened this week?" — gets dateable, referenceable moments
-- **Sleep/energy probe** — if not raised naturally — the single most predictive wellbeing signal
-- **Positive anchor** — before closing, always ask for one good moment — feeds the wins data in the reflection
-- **Social connection probe** — "Have you seen anyone this week you're glad you did?" — strong predictor, currently underrepresented
-- **Week framing** — "Thinking back across the whole week..." — gets weekly perspective rather than just today
-
-These are additive and do not change the check-in structure. Changes require prompt version bump and regression testing.
-
----
-
-### Cohort Template Library
-
-**Priority**: High
-**Status**: Active planning — sprint candidate
-
-Evolve the existing Cohort Analysis from a build-it-yourself tool into a shared library of reusable, live-data cohort views. Users build cohort configurations once, and they become discoverable templates that anyone at the institution can use, always populated with current data.
-
-**Current state**: Cohort comparisons are saved to browser `localStorage` with auto-generated titles, no user ownership, no sharing, and placeholder data generation instead of live queries.
-
-**Target state**:
-- Saved cohort configurations stored in the database, scoped to institution and user
-- Custom titles and author attribution on every saved view
-- "Publish to library" toggle makes a user's view available to all colleagues at the same institution
-- Browsable library of published templates, searchable by title, author, and cohort type
-- Templates populated with live data on load (not static snapshots)
-- Historical data overlay: show the same cohort definition over a previous period for comparison (e.g. same term last year)
-- Mind Measure can seed institutions with recommended starter templates based on their structure
-
-**Key milestones**:
-- Phase 1: Custom chart titles (editable before save) and migration from `localStorage` to database (`saved_cohort_templates` table with `university_id`, `created_by`, `title`, `is_published`)
-- Phase 2: Live data population — cohort charts query real data via `UniversityDataService` instead of placeholder generators
-- Phase 3: Library UI — browse, search, and load published templates; author attribution
-- Phase 4: Historical overlay — query archived data for the same cohort definition across different time periods
-- Phase 5: Institutional starter packs — Mind Measure curates recommended templates per institution type
-
-**Why this matters**: A single wellbeing researcher's insight (e.g. comparing halls of residence across campuses) becomes institutional knowledge. The library effect means the value of the platform compounds as more people use it, and researchers spend time interpreting data rather than constructing views.
+| Initiative | Priority | Status | Summary |
+|---|---|---|---|
+| Conversational Insight v2 | High | Shipped both lines | Cohort-targeted, ask-once questions woven into check-ins with an always-on dashboard. Phases 1–4 live: audience targeting, per-user ask-once rotation, fully anonymised responses, and per-session prompt resolution at check-in start on both apps. Standalone Insight Hubs live at insight.mindmeasure.co.uk and insight.mindmeasurepro.com. Phase 5 (aggregate export + thread comparison across runs) deferred. [Spec](/planning/conversational-insight-v2) |
+| Per-institution agent personalisation + memory | High | Shipped both lines | Live session context injected into each institution's Jodie prompt; custom check-in questions replace an exchange rather than extending length; 4–6 exchange default pacing. |
+| Downloadable Wellbeing Reports (enhanced) | Medium | V1 shipped; enhancements blocked | 14/30/90-day reports with executive summary, transcript snippets and charts are live. Clinical enhancements (therapist-reviewed language, curated suggestions, baseline comparison with clinical context) await professional input. |
+| Score reveal interaction | Medium | Spec written | A short "preparing your results" transition followed by an animated gauge reveal, to give the score perceived weight without feeling like a delay (1–2 seconds). |
+| Text-based check-in | Medium | Concept | A chat alternative to voice using the same Jodie persona and flow, for quiet environments and lower data usage. |
+| Auth token standardisation | Medium | Planning | Align the university and Pro mobile apps on the `cognitoApiClient` pattern (proven in Pro), then extract a shared auth module. |
+| Load testing | Medium | Not started | Exercise the full check-in flow at 50/100/200 concurrent users; identify and fix Bedrock/Rekognition throttling and Aurora connection limits, then set an ongoing baseline. |
+| Investor dashboard | Medium | Concept | Growth, adoption, revenue/cost and platform-health view. Needs design; no Figma yet. |
+| Multi-language support | Low | Future | Jodie voice, Bedrock analysis, mobile UI and knowledge bases in the user's preferred language for international populations. |
+| Voice provider abstraction (PersonaPlex) | Low (R&D) | Research | Provider-agnostic voice interface so ElevenLabs can be swapped for OpenAI Realtime, Cartesia, or self-hosted NVIDIA PersonaPlex. PersonaPlex offers ~100x cost reduction at scale (MIT-licensed weights); break-even at ~10,000 minutes/month. |
+| API for institutional systems | Low | Future | Anonymised, aggregated data API plus SSO and risk-escalation webhooks for enterprise integration. |
 
 ---
 
-### Streak Rewards
+## Recently shipped
 
-**Priority**: Under consideration — approach being reviewed
-**Status**: Concept — not proceeding until reward mechanism is resolved
+Features that were planned here and are now live, newest first.
 
-The original concept was to reward consistent check-in habits with digital vouchers. This is being reconsidered in light of the Weekly Reflection.
-
-**The tension**: The Weekly Reflection is itself a form of intrinsic reward — recognition, insight, feeling seen. Research on motivation consistently shows that introducing external (extrinsic) rewards for behaviours that are already intrinsically motivated can undermine long-term engagement. Students who check in for a voucher are not students who are building a genuine wellbeing habit.
-
-**Open questions before proceeding**:
-- Can a reward mechanism reinforce intrinsic motivation rather than replace it? (e.g. rewards tied to milestones like "your 30th reflection" rather than raw check-in count)
-- Is there a model where social recognition (sharing a streak, peer acknowledgement) achieves the engagement goal without the extrinsic reward risk?
-- What does the data show — do students who check in regularly already not need an incentive, and does the incentive only attract low-quality engagement?
-
-**Not parked** — the revenue case (partner retailer sponsorship) remains valid. But the mechanism needs design thinking, not just engineering. Revisit after the Weekly Reflection is fully live and engagement data is available.
-
----
-
-### Student Ambassador Platform
-
-**Priority**: High
-**Status**: Concept — spec to be written
-
-A social media assets library and student ambassador signup, logging, and management system. Ambassadors receive bonuses based on users signing up and regularly using the platform.
-
-**Key milestones**:
-- Phase 1: Ambassador signup and onboarding flow
-- Phase 2: Social media assets library (branded content, templates, guidelines)
-- Phase 3: Referral tracking — link sign-ups to ambassadors and track ongoing engagement
-- Phase 4: Ambassador dashboard — login, view sign-ups, monthly payouts, performance metrics
-- Phase 5: Admin management — approve ambassadors, set bonus tiers, process payouts
-
-**Revenue impact**: Organic user acquisition through peer networks. Ambassador programme reduces marketing spend while increasing authentic engagement.
+| Feature | Product | Shipped | Notes |
+|---|---|---|---|
+| Conversational Insight v2 (Phases 1–4) | Both | Jun 2026 | Audience targeting, ask-once rotation, anonymised responses, per-session prompt resolution at check-in. [Spec](/planning/conversational-insight-v2) |
+| Standalone Insight Hubs | Both | Jun 2026 | insight.mindmeasure.co.uk and insight.mindmeasurepro.com — thin UI proxies onto the core Conversational Insight endpoints, SSO handoff from admin, k-anonymity floor of five. |
+| Per-institution agent personalisation + memory | Both | Jun 2026 | Live session context in institutional Jodie prompts; custom questions replace an exchange; 4–6 default pacing. |
+| Weekly Reflection (Pro) | Pro | Jun 2026 | Reflection pipeline brought to parity in Pro with superuser toggle, opt-in gating, and employee-app opt-in. |
+| Mental health advocates + structured EAP | Pro | Jun 2026 | Per-office advocates and EAP programmes feeding Jodie's signposting. |
+| Weekly Reflection (Phase 1) | University | Apr–Jun 2026 | Email pipeline, web view, PDF, share card, safeguarding infrastructure, mobile opt-out and superuser audit panel. [Feature docs](/operations/weekly-reflection) |
+| Institutional Agents (Phases 1–3) | Both | Feb 2026 | [Architecture docs](/architecture/institutional-agents) |
+| Cohort Comparison Analytics | University | Feb 2026 | [View details](/planning/completed/cohort-comparison-analytics) |
+| Downloadable Wellbeing Reports (V1) | Both | Feb 2026 | [View details](/planning/completed/downloadable-wellbeing-reports) |
+| Automated Platform Monitoring | Platform | Feb 2026 | Ecosystem audit + cron + SES email alerts every four hours |
+| Voice Agent Prompt Refinement (Jodie v2) | Both | Feb 2026 | Enriched dynamic variables, improved pacing, number formatting |
+| JWT Signature Verification | Platform | Feb 2026 | All API routes verify Cognito JWT signatures |
+| Database Connection Pooling | Platform | Feb 2026 | Module-level Pool singleton in serverless functions |
+| Input Validation Hardening | Platform | Feb 2026 | Frame array caps, transcript length limits, CORS allowlisting |
+| API Retry Logic | Platform | Feb 2026 | Exponential backoff on Bedrock and Rekognition calls |
+| Bedrock Model Upgrade | Platform | Feb 2026 | Claude 3 Haiku to Claude 3.7 Sonnet |
+| Shared Package Extraction | Platform | Mar 2026 | Four private NPM packages consolidating ~15,800 lines; repos stay independent for M&A flexibility. See [Technical Due Diligence](/planning/technical-due-diligence) §9.2. |
 
 ---
 
-### Auth Token Standardisation
+## Parked ideas
 
-**Priority**: Medium
-**Status**: Planning
-
-The University mobile app (`mind-measure-mobile-final`) and Pro mobile app (`mind-measure-pro-mobile`) use different token retrieval patterns — `setTokenProvider` vs `cognitoApiClient`. Aligning both on the same pattern improves reliability and enables shared API middleware.
-
-**Key milestones**:
-- Phase 1: Audit current auth patterns across both mobile apps
-- Phase 2: Align on `cognitoApiClient` pattern (proven in Pro)
-- Phase 3: Extract shared auth module (feeds into monorepo Phase 2)
-
----
-
-### Voice Provider Abstraction & PersonaPlex
-
-**Priority**: Low (R&D)
-**Status**: Research — platform audit documents alternatives
-
-Build a provider-agnostic voice interface so ElevenLabs can be swapped for alternatives (OpenAI Realtime, Cartesia Sonic-3, or self-hosted NVIDIA PersonaPlex). PersonaPlex offers 100x cost reduction at scale (~$0.001/min vs ~$0.10/min) with MIT-licensed weights.
-
-**Key milestones**:
-- Phase 1: Build interface-based voice provider abstraction layer
-- Phase 2: Prototype PersonaPlex on cloud A100 (AWS g5.2xlarge) with wellbeing check-in prompts
-- Phase 3: Benchmark quality, latency, and cost vs ElevenLabs
-- Phase 4: If viable, migrate to self-hosted; break-even at ~10,000 minutes/month
-
----
-
-### Load Testing
-
-**Priority**: Medium
-**Status**: Not started
-
-Load test the full check-in flow at 100+ concurrent users. The platform audit identified potential bottlenecks: Bedrock/Rekognition throttling under concurrent load, and Aurora connection pressure (now mitigated by connection pooling).
-
-**Key milestones**:
-- Phase 1: Build load test script simulating concurrent check-ins
-- Phase 2: Test at 50, 100, 200 concurrent users
-- Phase 3: Identify and fix bottlenecks (circuit breakers, request queuing)
-- Phase 4: Establish ongoing performance baseline
-
----
-
-### Score Reveal Interaction
-
-**Priority**: Medium
-**Status**: Spec written — not started
-
-Strengthen the perceived significance of the Mind Measure score by introducing a short transition between processing completion and score display. A score represents an evaluation of the user's state — presenting it instantly can make the result feel trivial or arbitrary. A brief transition creates a natural pause, signalling that the system has completed analysis and is preparing the result.
-
-**Proposed interaction sequence**:
-1. User completes check-in
-2. Processing animation runs (existing behaviour)
-3. Short transition screen appears: "Your check-in is complete. Preparing your results."
-4. Score reveal screen loads — gauge appears first, score animates into place over ~1 second, scoring band highlights
-5. One-line interpretation appears under the score
-6. Full dashboard view becomes available
-
-**Design principles**:
-- Keep the transition short (1–2 seconds)
-- Avoid technical language or process descriptions
-- Emphasise completion and preparation rather than analysis
-- Ensure animation timing feels intentional rather than delaying the user
-
----
-
-## Feature Ideas
-
-### Investor Dashboard
-
-**Priority**: Medium  
-**Origin**: Investor page exists on mindmeasure.co.uk — no dashboard or designs yet
-
-Build a dedicated investor-facing dashboard (separate from superuser portal or within it):
-- User growth and engagement trends
-- University/company adoption metrics
-- Revenue and cost overview
-- Platform health summary
-- Requires design work — no Figma designs exist for this
-
----
-
-### Downloadable Wellbeing Reports (Enhanced)
-
-**Priority**: Medium  
-**Status**: V1 deployed — detailed reports covering 14/30/90-day periods with executive summary, transcript snippets, and charts  
-**Blocker**: Further development requires professional input from therapists to ensure clinical appropriateness
-
-Planned enhancements:
-- Therapist-reviewed content guidance and language
-- Actionable wellbeing suggestions (curated by clinicians, not AI-generated)
-- Comparison to personal baseline with clinical context
-- Institution-branded report templates
-- Exportable data for clinical handoffs
-
----
-
-### Real-Time Risk Escalation
-
-**Priority**: High — foundation built, Tiers 2/3 pending sign-off
-**Origin**: Bedrock analysis already scores risk; safeguarding infrastructure built April 2026
-
-The tiered welfare monitoring framework is now partially implemented (see [Welfare Monitoring System](#welfare-monitoring-system) in Active Planning above). What remains is the Tier 2/3 escalation workflow — automated or semi-automated notification to university welfare contacts when severe or sustained risk is detected.
-
-**Already built**: keyword scan, Bedrock safety flag, score thresholds, audit trail, `welfare_nudges_sent` table.
-
-**Still to build** (requires clinical and legal sign-off):
-- University welfare contact notification workflow (Tier 3 — GDPR vital interests basis)
-- Configurable thresholds per institution
-- Escalation workflow (alert → acknowledge → follow-up → resolve)
-- Integration with institutional safeguarding systems
-
----
-
-### Text-Based Check-In Alternative
-
-**Priority**: Medium  
-**Origin**: Not all users want voice check-ins
-
-Offer a text-based chat alternative to voice:
-- Same Jodie persona and conversation flow
-- Uses ElevenLabs text-based agent or direct LLM integration
-- Lower data usage, works in quiet environments
-- User preference stored in settings (once Settings Phase 2 is built)
-
----
-
-### Multi-Language Support
-
-**Priority**: Low (future)  
-**Origin**: International student populations
-
-- Jodie agent speaks in the user's preferred language
-- ElevenLabs supports multiple languages for voice
-- Bedrock analysis handles non-English transcripts
-- UI localisation for mobile app
-- Knowledge base documents in multiple languages
-
----
-
-### Peer Support Network
-
-**Priority**: Low (future)  
-**Origin**: Extension of buddy system
-
-Evolve the buddy system into a broader peer support network:
-- Trained peer supporters matched to students
-- Guided conversation prompts for supporters
-- Feedback loop to institution on peer support usage
-- Integration with institutional peer mentoring schemes
-
----
-
-### API for Institutional Systems
-
-**Priority**: Low (future)  
-**Origin**: Enterprise integration requests
-
-Expose anonymised, aggregated data via API:
-- Wellbeing trend data for institutional dashboards
-- Integration with student records systems
-- SSO integration for institutional login
-- Webhook notifications for risk escalation
-
----
-
-## Parked Ideas
-
-Ideas captured but not actively planned. Revisit as the platform matures.
+Captured but not actively planned. Revisit as the platform matures.
 
 | Idea | Notes |
-|------|-------|
-| Wearable integration | Heart rate, sleep data from Apple Health / Google Fit. Privacy implications need careful consideration. |
+|---|---|
+| Wearable integration | Heart rate and sleep data from Apple Health / Google Fit. Privacy implications need careful consideration. |
 | Family/guardian portal | For under-18 users. Significant consent and safeguarding implications. |
 | AI therapist mode | Beyond Jodie's scope. Would require clinical oversight and regulatory approval. |
 
 ---
 
-## Completed Features
+## How to maintain this document
 
-Features that were planned here and are now live. Each links to a detailed write-up documenting what was built.
-
-| Feature | Completed | Documentation |
-|---------|-----------|---------------|
-| Institutional Agents (Phases 1–3) | Feb 2026 | [Architecture docs](/architecture/institutional-agents) |
-| Cohort Comparison Analytics | Feb 2026 | [View details](/planning/completed/cohort-comparison-analytics) |
-| Downloadable Wellbeing Reports (V1) | Feb 2026 | [View details](/planning/completed/downloadable-wellbeing-reports) |
-| Automated Platform Monitoring | Feb 2026 | Ecosystem audit + cron + SES email alerts every 4 hours |
-| Voice Agent Prompt Refinement (Jodie v2) | Feb 2026 | Enriched dynamic variables, improved pacing, number formatting |
-| JWT Signature Verification | Feb 2026 | All API routes now verify Cognito JWT signatures |
-| Database Connection Pooling | Feb 2026 | Module-level Pool singleton in all Vercel serverless functions |
-| Input Validation Hardening | Feb 2026 | Frame array caps, transcript length limits, CORS allowlisting |
-| API Retry Logic | Feb 2026 | Exponential backoff on Bedrock and Rekognition calls |
-| Documentation Cleanup | Feb 2026 | Removed 26 duplicate files, organized into folder structure |
-| Bedrock Model Upgrade | Feb 2026 | Upgraded from Claude 3 Haiku to Claude 3.7 Sonnet |
-| Weekly Reflection (Phase 1) | Apr 2026 | Email pipeline, web view, PDF, share card, safeguarding infrastructure. [Feature docs](/operations/weekly-reflection) · [Safeguards](/operations/weekly-reflection-safeguards) · [Runbook](/operations/weekly-reflection-runbook) |
-| Shared Package Extraction | Mar 2026 | 4 private NPM packages (`@mindmeasure/api-lib`, `shared-services`, `shared-types`, `shared-ui`) consolidating ~15,800 lines. Replaced monorepo plan — repos stay independent for M&A flexibility. See [Technical Due Diligence](/planning/technical-due-diligence) §9.2. |
-
----
-
-## How to Use This Document
-
-- **Add ideas freely** — capture everything, filter later
-- **Move to "Active Planning"** when a spec is being written
-- **Link to full specs** in the Planning section when they exist
-- **Park ideas** that aren't ready but shouldn't be forgotten
-- **When a feature is complete**: remove it from Active Planning / Feature Ideas, add it to the Completed Features table with a link to a write-up in `/planning/completed/`, and ensure it is listed in [Future Development](/future-development)
-- **Never delete** — move to Parked with a note instead
-- Keep the "Last Updated" date current
+- **Add ideas freely** to the relevant product table or Cross-platform, then refine.
+- **Promote to a higher status** as a spec is written and work begins; link to the full spec.
+- **When a feature ships**: move it to Recently shipped (with product and month), remove it from the roadmap tables, and ensure it is listed in [Future Development](/future-development).
+- **Never delete** — move to Parked with a note instead.
+- Keep the **Last Updated** date current and check status against git ground truth, not memory.
