@@ -15,11 +15,13 @@ For lower-level technical work in progress, see [Future Development](/future-dev
 | Status | Meaning |
 |---|---|
 | Shipped | Live in production |
-| In build | Actively being built this sprint |
+| In build | Actively being built now |
 | Next sprint | Specced and queued |
 | Planned | Agreed, not yet specced in detail |
+| Blocked | Built up to a point, gated on external sign-off (clinical, legal) |
 | Concept | Idea captured, spec to be written |
 | Research | R&D / feasibility only |
+| Future | Long-term, not yet scheduled |
 | Deferred | Intentionally parked for now |
 
 ---
@@ -28,13 +30,27 @@ For lower-level technical work in progress, see [Future Development](/future-dev
 
 | Initiative | Priority | Status | Summary |
 |---|---|---|---|
-| Weekly Reflection (production wiring) | High | In build | Personalised Sunday email summarising each student's week through their Jodie conversations. Phase 1 live: email, web view, PDF, share card, safeguarding infrastructure, mobile opt-out, and the superuser audit panel. Remaining: Tier 0 inactivity nudge and the welfare-modified reflection for negative-only weeks. [Spec](/operations/weekly-reflection) · [Safeguards](/operations/weekly-reflection-safeguards) · [Runbook](/operations/weekly-reflection-runbook) |
-| Welfare monitoring (Tiers 2/3 escalation) | High | Foundation shipped; escalation pending sign-off | Tiered response framework beneath the reflection. Keyword scan, Bedrock safety flag, score thresholds and full audit trail are live. Tier 2/3 escalation to university welfare contacts (GDPR vital interests) awaits clinical review of thresholds and legal review of the disclosure basis. [Policy](/operations/weekly-reflection-safeguards) |
+| Wellbeing Protection (safeguarding programme) | High | Partly shipped; escalation phases blocked | The safeguarding spine beneath the Weekly Reflection. A seven-phase programme: the data foundations, safeguarding-contact model, welfare audit panel and per-student welfare timeline are live; the active escalation phases are gated on clinical and legal sign-off. Full breakdown below. [Policy](/operations/weekly-reflection-safeguards) |
 | Cohort Template Library | High | Next sprint | Turn one-off cohort comparisons into a shared, live-data template library scoped to each institution. Migrates `localStorage` views to a `saved_cohort_templates` table, adds custom titles and author attribution, publish-to-library, live data on load, and a historical overlay across time periods. |
 | Student Ambassador Platform | High | Concept | Ambassador signup and onboarding, branded social-asset library, referral tracking, payout dashboard and admin management, to drive organic student acquisition through peer networks. |
-| Jodie prompt improvements (university) | Medium | Planned | Additive prompts (named events, sleep/energy probe, positive anchor, social-connection probe, week framing) that enrich the data feeding the Weekly Reflection. Requires a prompt version bump and regression testing; does not change the check-in structure. |
-| Streak rewards | Medium | Under review | Voucher rewards for consistent check-ins. On hold pending a mechanism that reinforces intrinsic motivation rather than undermining it. Revenue case (retailer sponsorship) remains valid; revisit once Weekly Reflection engagement data is available. |
+| Streak rewards | Medium | Planned | Voucher rewards for consistent check-ins. Held pending a mechanism that reinforces intrinsic motivation rather than undermining it. Revenue case (retailer sponsorship) remains valid; revisit once Weekly Reflection engagement data is available. |
 | Peer support network | Low | Future | Evolve the buddy system into trained peer supporters with guided conversation prompts and an institutional feedback loop. |
+
+### Wellbeing Protection programme (phase detail)
+
+The university safeguarding programme that sits beneath the Weekly Reflection and the daily check-in. Foundations and the welfare timeline are live; the phases that take automated action on a student's behalf, or disclose to a third party, are deliberately held until clinical thresholds and the legal disclosure basis are signed off.
+
+| Phase | Scope | Status |
+|---|---|---|
+| Phase 1 | Data foundations, safeguarding-contact model, superuser welfare audit panel | Shipped |
+| Phase 6 | Per-student welfare timeline API, PDF export and timeline panel | Shipped |
+| Phase 2 | Compound trigger engine (combine signals across check-ins into a single risk picture) | Blocked, clinical review of thresholds |
+| Phase 3 | Automated Level 4 notification pipeline to university welfare contacts | Blocked, clinical + legal review of the disclosure basis (GDPR vital interests) |
+| Phase 4 | Disclosure review queue with write actions (human-in-the-loop sign-off before any disclosure) | Blocked, legal review |
+| Phase 5 | Onboarding consent screen in the student app | Blocked, legal review |
+| Phase 7 | Real-time Level 5 crisis response | Planned |
+
+Keyword scanning, the Bedrock safety flag, score thresholds and a full audit trail are already live and feed the reflection. The blocked phases are an organisational gate (clinical and legal), not an engineering one.
 
 ---
 
@@ -42,9 +58,9 @@ For lower-level technical work in progress, see [Future Development](/future-dev
 
 | Initiative | Priority | Status | Summary |
 |---|---|---|---|
-| Institutional Alerts | High | Phase 1 shipped; Phase 2 in build | Severity-tagged broadcast channel from company admins into the employee app (welfare / info / notice / urgent), with push notifications for higher tiers. Driven by the PwC Middle East pilot, where staff need a single source of truth for whether the office is open. Phase 2 adds audience targeting; welfare-tier alerts always ship with support links. Reach exposed as anonymous aggregate counts only. [Spec](/planning/institutional-alerts) |
-| Weekly Reflection (Pro) | High | Shipped (Jun 2026) | Same reflection pipeline as university, brought to parity in `mind-measure-pro-core`, with a superuser toggle, opt-in gating, and an opt-in toggle in the employee app settings. |
-| Mental health advocates + structured EAP | Medium | Shipped (Jun 2026) | Per-office mental health advocates and structured EAP programmes feeding Jodie's signposting knowledge, so employee-facing support routing matches each employer's provision. |
+| Dashboard support banner (Phase B) | Medium | Blocked | Persistent, employer-configurable support banner in the employee app dashboard, surfacing EAP and crisis routing above the fold. Sits behind the wider support-routing work. |
+
+Most near-term Pro initiatives have now shipped (Institutional Alerts including Phase 2, Weekly Reflection, mental health advocates and structured EAP); see Recently shipped. Pro also inherits the cross-platform engineering work below.
 
 ---
 
@@ -54,16 +70,15 @@ Work that spans both product lines, or sits in the shared engine and tooling.
 
 | Initiative | Priority | Status | Summary |
 |---|---|---|---|
-| Conversational Insight v2 | High | Shipped both lines | Cohort-targeted, ask-once questions woven into check-ins with an always-on dashboard. Phases 1–4 live: audience targeting, per-user ask-once rotation, fully anonymised responses, and per-session prompt resolution at check-in start on both apps. Standalone Insight Hubs live at insight.mindmeasure.co.uk and insight.mindmeasurepro.com. Phase 5 (aggregate export + thread comparison across runs) deferred. [Spec](/planning/conversational-insight-v2) |
-| Per-institution agent personalisation + memory | High | Shipped both lines | Live session context injected into each institution's Jodie prompt; custom check-in questions replace an exchange rather than extending length; 4–6 exchange default pacing. |
+| Cost monitoring | High | In build (finishing wiring) | Per-customer cost rollup is live: a superuser network cost summary widget with per-company breakdown, AWS split into Bedrock / Rekognition / Other, ElevenLabs usage with tier fallback, server-side FX, and a dual-database rollup in Ops. Remaining wiring: the university write path and the Pro budgets / alerts tables. |
+| Auth token standardisation | Medium | In build | Both mobile apps are now aligned on the `cognitoApiClient` pattern (the university app adopted the Pro pattern). Remaining: extract a shared auth module into the `@mindmeasure/*` packages so the two apps share one implementation. |
 | Downloadable Wellbeing Reports (enhanced) | Medium | V1 shipped; enhancements blocked | 14/30/90-day reports with executive summary, transcript snippets and charts are live. Clinical enhancements (therapist-reviewed language, curated suggestions, baseline comparison with clinical context) await professional input. |
-| Score reveal interaction | Medium | Spec written | A short "preparing your results" transition followed by an animated gauge reveal, to give the score perceived weight without feeling like a delay (1–2 seconds). |
+| Score reveal interaction | Medium | Planned | A short "preparing your results" transition followed by an animated gauge reveal, to give the score perceived weight without feeling like a delay (1–2 seconds). Spec written. |
 | Text-based check-in | Medium | Concept | A chat alternative to voice using the same Jodie persona and flow, for quiet environments and lower data usage. |
-| Auth token standardisation | Medium | Planning | Align the university and Pro mobile apps on the `cognitoApiClient` pattern (proven in Pro), then extract a shared auth module. |
-| Load testing | Medium | Not started | Exercise the full check-in flow at 50/100/200 concurrent users; identify and fix Bedrock/Rekognition throttling and Aurora connection limits, then set an ongoing baseline. |
+| Load testing | Medium | Planned | Exercise the full check-in flow at 50/100/200 concurrent users; identify and fix Bedrock/Rekognition throttling and Aurora connection limits, then set an ongoing baseline. |
 | Investor dashboard | Medium | Concept | Growth, adoption, revenue/cost and platform-health view. Needs design; no Figma yet. |
 | Multi-language support | Low | Future | Jodie voice, Bedrock analysis, mobile UI and knowledge bases in the user's preferred language for international populations. |
-| Voice provider abstraction (PersonaPlex) | Low (R&D) | Research | Provider-agnostic voice interface so ElevenLabs can be swapped for OpenAI Realtime, Cartesia, or self-hosted NVIDIA PersonaPlex. PersonaPlex offers ~100x cost reduction at scale (MIT-licensed weights); break-even at ~10,000 minutes/month. |
+| Voice provider abstraction (PersonaPlex) | Low | Research | Provider-agnostic voice interface so ElevenLabs can be swapped for OpenAI Realtime, Cartesia, or self-hosted NVIDIA PersonaPlex. PersonaPlex offers ~100x cost reduction at scale (MIT-licensed weights); break-even at ~10,000 minutes/month. |
 | API for institutional systems | Low | Future | Anonymised, aggregated data API plus SSO and risk-escalation webhooks for enterprise integration. |
 
 ---
@@ -74,12 +89,17 @@ Features that were planned here and are now live, newest first.
 
 | Feature | Product | Shipped | Notes |
 |---|---|---|---|
+| Institutional Alerts (incl. Phase 2 targeting) | Pro | Jun 2026 | Severity-tagged broadcast channel from company admins into the employee app (welfare / info / notice / urgent), with push for higher tiers and audience targeting. Welfare-tier alerts always ship with support links; reach exposed as anonymous aggregate counts only. Driven by the PwC Middle East pilot. [Spec](/planning/institutional-alerts) |
+| Weekly Reflection (University) | University | Jun 2026 | Production wiring complete. Personalised Sunday email summarising each student's week through their Jodie conversations: email pipeline, web view, PDF, share card, safeguarding infrastructure, mobile opt-out, superuser audit panel and the welfare-modified reflection for negative-only weeks. [Feature docs](/operations/weekly-reflection) |
+| Weekly Reflection (Pro) | Pro | Jun 2026 | Same reflection pipeline brought to parity in `mind-measure-pro-core`, with a superuser toggle, opt-in gating, and an opt-in toggle in the employee app settings. |
+| Mental health advocates + structured EAP | Pro | Jun 2026 | Per-office mental health advocates and structured EAP programmes, now configured per employer in the CMS, feeding Jodie's signposting knowledge so support routing matches each employer's provision. |
+| Jodie prompt improvements | Both | Jun 2026 | Additive prompts (named events, sleep/energy probe, positive anchor, social-connection probe, week framing) that enrich the data feeding the Weekly Reflection. No change to check-in structure. |
 | Conversational Insight v2 (Phases 1–4) | Both | Jun 2026 | Audience targeting, ask-once rotation, anonymised responses, per-session prompt resolution at check-in. [Spec](/planning/conversational-insight-v2) |
 | Standalone Insight Hubs | Both | Jun 2026 | insight.mindmeasure.co.uk and insight.mindmeasurepro.com — thin UI proxies onto the core Conversational Insight endpoints, SSO handoff from admin, k-anonymity floor of five. |
 | Per-institution agent personalisation + memory | Both | Jun 2026 | Live session context in institutional Jodie prompts; custom questions replace an exchange; 4–6 default pacing. |
-| Weekly Reflection (Pro) | Pro | Jun 2026 | Reflection pipeline brought to parity in Pro with superuser toggle, opt-in gating, and employee-app opt-in. |
-| Mental health advocates + structured EAP | Pro | Jun 2026 | Per-office advocates and EAP programmes feeding Jodie's signposting. |
-| Weekly Reflection (Phase 1) | University | Apr–Jun 2026 | Email pipeline, web view, PDF, share card, safeguarding infrastructure, mobile opt-out and superuser audit panel. [Feature docs](/operations/weekly-reflection) |
+| Cost monitoring (network rollup + per-company breakdown) | Both | Jun 2026 | Superuser cost summary across core and pro-core, AWS split into Bedrock / Rekognition / Other, ElevenLabs usage, and a dual-database rollup in Ops. Final wiring (uni write path, Pro budgets/alerts) in progress. |
+| Wellbeing Protection Phase 6 (welfare timeline) | University | Apr 2026 | Per-student welfare timeline API, PDF export and timeline panel. |
+| Wellbeing Protection Phase 1 (foundations + audit panel) | University | Apr 2026 | Data foundations, safeguarding-contact model, superuser welfare audit panel, safeguarding infrastructure. |
 | Institutional Agents (Phases 1–3) | Both | Feb 2026 | [Architecture docs](/architecture/institutional-agents) |
 | Cohort Comparison Analytics | University | Feb 2026 | [View details](/planning/completed/cohort-comparison-analytics) |
 | Downloadable Wellbeing Reports (V1) | Both | Feb 2026 | [View details](/planning/completed/downloadable-wellbeing-reports) |
