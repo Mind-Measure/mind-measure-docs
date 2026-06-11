@@ -149,7 +149,7 @@ An automated ecosystem health audit runs every four hours via a Vercel cron job.
 
 ### 7.1 Security Architecture
 
-Data at rest is encrypted with AES-256 using AWS KMS-managed keys with annual rotation. Data in transit is encrypted with TLS 1.3 from browser to Vercel edge and TLS 1.2 or above from Vercel to Aurora. PHI field-level encryption (AES-256-GCM with authenticated encryption) is applied individually to sensitive fields including names, email addresses, conversation transcripts, and assessment results, providing defence in depth: even a database compromise would not expose readable PHI.
+Data at rest is encrypted with AES-256 at the storage layer using AWS KMS-managed keys (Aurora storage encryption and S3). Data in transit is encrypted with TLS 1.3 from browser to Vercel edge and TLS 1.2 or above from Vercel to Aurora. Application-level, per-field encryption of the most sensitive columns (transcripts, assessment results) is designed as defence in depth but is not yet enforced on the server-side write path: the back-office analysis pipeline reads these in plaintext, so they are stored in plaintext within the encrypted volume. Implementing it on that safe subset is tracked as a security follow-up.
 
 Authentication uses AWS Cognito with RS256 JWT tokens. All API routes verify JWT signatures cryptographically against the Cognito JWKS endpoint. Multi-factor authentication is supported via TOTP and SMS. Superuser access uses a separate flow with time-limited HMAC-hashed 6-digit codes sent to verified Mind Measure email addresses.
 

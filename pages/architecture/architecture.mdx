@@ -42,7 +42,7 @@ Structured data lives in **Aurora Serverless v2** (PostgreSQL), encrypted at res
 
 Media is held in **Amazon S3**, encrypted, with private access through signed URLs. Raw signal is treated as disposable: audio is processed and then deleted within 24 hours, and still images from facial analysis are deleted immediately after processing. The platform does not collect location, contacts, photos, other app usage or browsing history.
 
-On top of database-level encryption, the most sensitive fields (names, email addresses, conversation transcripts, assessment results) carry their own field-level encryption (AES-256-GCM), so even a database compromise would not expose readable personal health information.
+All data is encrypted at rest at the storage layer (Aurora storage encryption and S3, AES-256 with AWS KMS-managed keys) and in transit (TLS). Application-level, per-field encryption of the most sensitive columns (names, conversation transcripts, assessment results) is designed but **not yet enforced on the server-side write path**, so it should be treated as roadmap rather than in force: the back-office analysis pipeline currently reads transcripts and results in plaintext. See the [database reference](/architecture/database) for the current state.
 
 The **separation principle**, that institutions receive only anonymised population-level data and never an individual's score, conversation or identity, is enforced in the data layer itself. The minimum cohort size of five is applied at the query level: the queries that would expose an individual simply do not exist.
 
@@ -108,7 +108,7 @@ Quality is enforced rather than hoped for: 750-plus unit tests run in CI with co
 | Concern | Service |
 |---|---|
 | Region | AWS eu-west-2 (London), UK data residency |
-| Encryption | AES-256 at rest (KMS), TLS 1.3 in transit, field-level AES-256-GCM for sensitive data |
+| Encryption | AES-256 at rest (Aurora/S3 storage encryption, KMS), TLS in transit; application-level field encryption is roadmap, not yet in force |
 | Secrets | AWS Secrets Manager |
 | Monitoring | CloudWatch, CloudTrail, Sentry |
 | Edge protection | Web application firewall, rate limiting, DDoS protection |

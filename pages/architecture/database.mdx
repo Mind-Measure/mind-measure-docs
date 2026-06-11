@@ -553,7 +553,7 @@ Aurora does not use Postgres row-level security here. Instead:
 
 **At Rest**
 - Aurora storage encryption (AWS-managed keys) covers the database at rest, including automated backups and snapshots.
-- Application-level field encryption (`PHIEncryption`) exists in the client codebase but is **not yet enforced server-side** on the API write path; treat server-side field-level PHI encryption as designed, not in force. (Tracked as a security follow-up.)
+- Application-level field encryption is **not in force**: there is no per-field PHI encryption on the API write path, so transcripts and assessment results sit in plaintext within the KMS-encrypted Aurora volume (the back-office analysis pipeline reads them in plaintext). A dead, non-functional client utility (`PHIEncryption.ts`) was retired June 2026. Implementing it on the safe subset (transcripts and `fusion_outputs.analysis`, KMS-backed key, decrypt-on-read) is tracked as a security follow-up.
 
 **In Transit**
 - TLS for all database connections.

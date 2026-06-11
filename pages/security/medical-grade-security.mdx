@@ -4,6 +4,8 @@
 
 Mind Measure has implemented comprehensive medical-grade security features to ensure HIPAA, GDPR, and SOC2 compliance. This implementation provides enterprise-level security for healthcare applications handling Protected Health Information (PHI).
 
+> **Status note (June 2026).** This page describes the target security service layer. MFA (AWS Cognito), audit logging and RBAC are live. **Application-level field encryption is not yet in force**: at-rest protection today is delivered at the storage layer (Aurora storage encryption and S3, AES-256 via AWS KMS) and TLS in transit, but the most sensitive columns (transcripts, assessment results) are stored in plaintext within that encrypted volume because the back-office analysis pipeline reads them in plaintext. The code sample in the [PHI Encryption Implementation](#phi-encryption-implementation) section below is illustrative of the planned utility, not a description of the current server-side write path. See [Sub-processors & data flow](/security/sub-processors) and the [database reference](/architecture/database) for the authoritative current state.
+
 ## Security Architecture
 
 ### Multi-Factor Authentication (MFA)
@@ -18,11 +20,14 @@ Mind Measure has implemented comprehensive medical-grade security features to en
 - **Compliance Reporting**: Automated generation of HIPAA, GDPR, and SOC2 reports
 - **Risk-based Classification**: Events categorized as LOW, MEDIUM, HIGH, or CRITICAL
 
-### Field-Level Encryption
-- **AES-256-GCM Encryption**: Military-grade encryption for sensitive data fields
+### Field-Level Encryption (roadmap, not yet in force)
+
+The design below is the planned application-level encryption layer. It is **not currently enforced** on the server-side write path; the items below describe the intended capability.
+
+- **AES-256-GCM Encryption**: Authenticated encryption for sensitive data fields
 - **Context-aware Encryption**: Additional authenticated data (AAD) for enhanced security
-- **Key Management**: Secure key rotation and management capabilities
-- **PHI Field Detection**: Automatic identification and encryption of PHI data
+- **Key Management**: KMS-backed data keys with rotation
+- **PHI Field Detection**: Identification of the PHI columns to protect (transcripts, assessment results)
 
 ## Implementation Details
 
@@ -72,6 +77,8 @@ await auditLogger.logAuth(
 ```
 
 ### PHI Encryption Implementation
+
+> Illustrative of the planned utility only. This is **not wired into the live server-side write path** today.
 
 ```typescript
 // Initialize PHI Encryption
