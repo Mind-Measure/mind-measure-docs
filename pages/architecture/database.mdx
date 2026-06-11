@@ -553,7 +553,7 @@ Aurora does not use Postgres row-level security here. Instead:
 
 **At Rest**
 - Aurora storage encryption (AWS-managed keys) covers the database at rest, including automated backups and snapshots.
-- Application-level field encryption is **not in force**: there is no per-field PHI encryption on the API write path, so transcripts and assessment results sit in plaintext within the KMS-encrypted Aurora volume (the back-office analysis pipeline reads them in plaintext). A dead, non-functional client utility (`PHIEncryption.ts`) was retired June 2026. Implementing it on the safe subset (transcripts and `fusion_outputs.analysis`, KMS-backed key, decrypt-on-read) is tracked as a security follow-up.
+- Application-level field encryption is **partially in force** (June 2026): the verbatim check-in transcript (`assessment_transcripts.transcript`) is encrypted at rest with KMS envelope encryption (per-record AES-256 data key, `enc:v1:` self-describing format) on the mobile write path, and decrypted server-side only where the analysis pipeline needs it (Conversational Insight, wellbeing reports, the admin transcript pull). Legacy plaintext rows pass through unchanged. The multimodal result blob (`fusion_outputs.analysis`) is **not** field-encrypted yet — it has a pervasive read/parse surface and sits in plaintext within the KMS-encrypted Aurora volume; encrypting it is a tracked defence-in-depth follow-up. A dead, non-functional client utility (`PHIEncryption.ts`) was retired June 2026.
 
 **In Transit**
 - TLS for all database connections.

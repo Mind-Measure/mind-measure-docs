@@ -108,7 +108,7 @@ Quality is enforced rather than hoped for: 750-plus unit tests run in CI with co
 | Concern | Service |
 |---|---|
 | Region | AWS eu-west-2 (London), UK data residency |
-| Encryption | AES-256 at rest (Aurora/S3 storage encryption, KMS), TLS in transit; application-level field encryption is roadmap, not yet in force |
+| Encryption | AES-256 at rest (Aurora/S3 storage encryption, KMS), TLS in transit; application-level field encryption now in force for the verbatim transcript (`assessment_transcripts.transcript`, KMS envelope), with `fusion_outputs.analysis` field encryption a tracked follow-up |
 | Secrets | AWS Secrets Manager |
 | Monitoring | CloudWatch, CloudTrail, Sentry |
 | Edge protection | Web application firewall, rate limiting, DDoS protection |

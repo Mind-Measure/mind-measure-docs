@@ -4,7 +4,7 @@
 
 Mind Measure has implemented comprehensive medical-grade security features to ensure HIPAA, GDPR, and SOC2 compliance. This implementation provides enterprise-level security for healthcare applications handling Protected Health Information (PHI).
 
-> **Status note (June 2026).** This page describes the target security service layer. MFA (AWS Cognito), audit logging and RBAC are live. **Application-level field encryption is not yet in force**: at-rest protection today is delivered at the storage layer (Aurora storage encryption and S3, AES-256 via AWS KMS) and TLS in transit, but the most sensitive columns (transcripts, assessment results) are stored in plaintext within that encrypted volume because the back-office analysis pipeline reads them in plaintext. The code sample in the [PHI Encryption Implementation](#phi-encryption-implementation) section below is illustrative of the planned utility, not a description of the current server-side write path. See [Sub-processors & data flow](/security/sub-processors) and the [database reference](/architecture/database) for the authoritative current state.
+> **Status note (June 2026).** This page describes the target security service layer. MFA (AWS Cognito), audit logging and RBAC are live. **Application-level field encryption is now partially in force**: the verbatim check-in transcript (`assessment_transcripts.transcript`) is encrypted at rest with KMS envelope encryption (per-record AES-256 data key, `enc:v1:` format) on the mobile write path and decrypted server-side only where the analysis pipeline needs it. Storage-layer at-rest protection (Aurora storage encryption and S3, AES-256 via AWS KMS) and TLS in transit remain in place underneath. The multimodal result blob (`fusion_outputs.analysis`) is **not** field-encrypted yet and sits in plaintext within the KMS-encrypted volume; that is a tracked defence-in-depth follow-up. See [Sub-processors & data flow](/security/sub-processors) and the [database reference](/architecture/database) for the authoritative current state.
 
 ## Security Architecture
 
@@ -20,14 +20,14 @@ Mind Measure has implemented comprehensive medical-grade security features to en
 - **Compliance Reporting**: Automated generation of HIPAA, GDPR, and SOC2 reports
 - **Risk-based Classification**: Events categorized as LOW, MEDIUM, HIGH, or CRITICAL
 
-### Field-Level Encryption (roadmap, not yet in force)
+### Field-Level Encryption (live for transcripts)
 
-The design below is the planned application-level encryption layer. It is **not currently enforced** on the server-side write path; the items below describe the intended capability.
+Application-level field encryption is enforced for the verbatim check-in transcript (`assessment_transcripts.transcript`). The mobile write path encrypts before INSERT and the core/pro-core read paths decrypt only where the analysis pipeline needs the text. Extending this to the `fusion_outputs.analysis` blob is a tracked follow-up.
 
-- **AES-256-GCM Encryption**: Authenticated encryption for sensitive data fields
-- **Context-aware Encryption**: Additional authenticated data (AAD) for enhanced security
-- **Key Management**: KMS-backed data keys with rotation
-- **PHI Field Detection**: Identification of the PHI columns to protect (transcripts, assessment results)
+- **KMS envelope encryption**: a per-record AES-256 data key from KMS `GenerateDataKey`, AES-256-GCM locally (authenticated encryption)
+- **Self-describing format**: `enc:v1:<base64 JSON{k,iv,t,c}>`; values without the `enc:v1:` prefix are treated as legacy plaintext and pass through on read, so migration is safe
+- **Key management**: a dedicated customer-managed KMS key (`alias/mindmeasure-phi`, eu-west-2) with annual rotation, usable only by the application service principal
+- **PHI field scope**: the verbatim transcript today; the multimodal result blob is the next candidate
 
 ## Implementation Details
 

@@ -409,7 +409,7 @@ The platform has been built primarily by a single developer. This is mitigated b
 | Core IP / Differentiation | **Strong** | Multimodal fusion engine with dynamic fallback. Clinical indicator extraction. Non-trivial to replicate. |
 | Security | **Strong** | HIPAA-aligned, GDPR-compliant, multi-layer encryption, immutable audit logging, RBAC, PHI field encryption, CORS whitelist, CSP headers, JWT verification. |
 | Authentication | **Strong** | Cognito RS256, MFA (TOTP + SMS), superuser HMAC codes, email domain validation. |
-| Encryption | **Strong** | AES-256 at rest (Aurora/S3 storage encryption, KMS), TLS in transit. Application-level field encryption is roadmap, not yet in force. |
+| Encryption | **Strong** | AES-256 at rest (Aurora/S3 storage encryption, KMS), TLS in transit. Application-level field encryption is in force for the verbatim check-in transcript (`assessment_transcripts.transcript`, KMS envelope encryption, decrypt-on-read in the analysis pipeline); field encryption of the `fusion_outputs.analysis` blob is a tracked defence-in-depth follow-up. |
 | Compliance | **Strong** | GDPR Art. 15/17 implemented, HIPAA safeguards, UK data residency, 7-year audit retention, data subject request tracking. |
 | Test Coverage | **Strong** | 750+ unit tests with enforced coverage thresholds, 8 Playwright specs, visual regression, pre-deploy checks. CI blocks PRs that reduce coverage. |
 | CI/CD | **Good** | GitHub Actions on all projects, pre-commit hooks (Husky + lint-staged), build verification, post-deploy smoke tests. |
