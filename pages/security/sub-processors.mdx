@@ -1,0 +1,95 @@
+import { Callout } from 'nextra/components'
+
+# Sub-processors and data flow
+
+<Callout type="info">
+  This is the **engineering source of truth** for which third parties process
+  personal data and exactly what each one receives, traced from the live code
+  path (the mobile check-in pipeline and the back-office API callers). The
+  **customer-facing contractual** version is section 15 of the
+  [Privacy Policy (University)](/legal/privacy-policy) and
+  [Privacy Policy (Pro)](/legal/privacy-policy-pro); the
+  [Customer Agreement](/legal/customer-agreement) incorporates the signed DPA.
+  If this page and a legal page disagree on a factual data-flow point, the
+  discrepancy is a bug to reconcile, not a difference of opinion. Verified June
+  2026.
+</Callout>
+
+## Roles
+
+For institutional deployments the **institution is the data controller**, Mind
+Measure Ltd is the **processor**, and the third parties below are
+**sub-processors**. All personal data is stored and processed in UK/EU AWS
+regions (`eu-west-2`); where a sub-processor operates outside the UK/EEA,
+transfers rely on the safeguards described in the privacy policy (Standard
+Contractual Clauses).
+
+## What happens in one check-in
+
+A check-in is **scored entirely on the user's device**; the fused score
+(70% text, 15% audio, 15% visual) is computed client-side and only the derived
+result is persisted. The raw modalities touch sub-processors as follows:
+
+1. **Voice conversation -> ElevenLabs.** The app runs the conversation through
+   the ElevenLabs React SDK (`@elevenlabs/react`). ElevenLabs streams the
+   user's microphone audio, generates Jodie's spoken replies, and returns the
+   running **transcript** (each turn's text) to the device. Speech-to-text is
+   done inside ElevenLabs as part of the conversation; there is no separate
+   transcription sub-processor.
+2. **Transcript text -> AWS Bedrock.** The device sends the transcript to
+   Bedrock (Claude 3.7 Sonnet) via `/api/bedrock/analyze-text` for the 70%
+   text analysis. Bedrock returns linguistic features/scores; it does not
+   retain inputs or train on them.
+3. **Sampled video frames -> AWS Rekognition.** Frames captured during the
+   check-in are sent to Rekognition for facial-landmark / expression features
+   (the 15% visual signal). Frames are not persisted as raw media.
+4. **Audio acoustic features -> on device.** The 15% audio signal (pitch,
+   timing, energy) is extracted locally. The raw audio is not sent to a text
+   model.
+5. **Derived result -> AWS (Aurora + S3).** The fused score and features land
+   in `fusion_outputs`; the transcript is stored best-effort in
+   `assessment_transcripts`. Storage is encrypted Aurora Serverless v2; S3 is a
+   temporary buffer for media per the retention policy.
+
+## Live sub-processors
+
+| Provider | Role | Personal data it receives | Region |
+|---|---|---|---|
+| **AWS** (Aurora, S3, Cognito, SES, CloudWatch) | Storage, auth, transactional email, logs | Account + profile data, derived scores/features, transcripts; auth tokens; operational logs | UK/EU (`eu-west-2`) |
+| **AWS Bedrock** (Claude) | Check-in text analysis (70%) and back-office generation | Transcript text (check-in); aggregated/de-identified inputs (back-office) | EU |
+| **AWS Rekognition** | Visual analysis (15%) | Sampled video frames during a check-in (not persisted as raw media) | EU |
+| **ElevenLabs** | Conversational voice agent (Jodie) + in-conversation speech-to-text | Live microphone audio and the resulting conversation transcript | See ElevenLabs DPA |
+| **Vercel** | Hosting + serverless API compute (front door) | Data in transit / ephemeral request handling; institutional dashboards serve aggregated, anonymised data | Global edge / configured region |
+| **Sentry** | Error and performance monitoring | Operational telemetry; may incidentally capture limited context in error payloads | Per Sentry DPA |
+
+Back-office generation (AI Insights, weekly reflections, cohort insight, report
+narratives) uses **AWS Bedrock (Claude Haiku 4.5)** and operates on
+aggregated, k-anonymised data (cohort floor of five), not raw individual PHI.
+See [Stack facts](/architecture/stack-facts) for the exact model identifiers.
+
+## Explicitly NOT sub-processors
+
+<Callout type="warning">
+  These appear in older documentation but are **not in the live data path.**
+  Do not list them as sub-processors.
+</Callout>
+
+- **OpenAI.** No live data flow. Speech-to-text is done by ElevenLabs, not
+  OpenAI Whisper. A `finalize-session-worker` Lambda (GPT-4o-mini transcript
+  enrichment) is still deployed but has **no caller** in the current app, so it
+  processes nothing. It is a **decommission candidate**; until it is removed,
+  it must not be wired back into the live flow without a DPA review. (Any
+  "Whisper / transcription" sub-processor row in the legal privacy policies is
+  stale and should be reconciled against this page.)
+- **Supabase.** Fully migrated to AWS Aurora Serverless v2. No Supabase service
+  processes Mind Measure data.
+
+## Reconciliation notes (for the next docs pass)
+
+- Legal privacy policies (`/legal/privacy-policy`, `/legal/privacy-policy-pro`)
+  §15 list a **"Whisper / transcription"** sub-processor row that is not in the
+  live path; that row should be removed or corrected to ElevenLabs. This is a
+  published-policy change, so it is left for a deliberate legal review rather
+  than edited here.
+- The older `Privacy & Legal` page (`/security/privacy`) previously named
+  "Supabase, OpenAI" as the service providers; corrected to match this page.
