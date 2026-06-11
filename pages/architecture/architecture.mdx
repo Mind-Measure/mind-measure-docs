@@ -22,7 +22,7 @@ Every user begins with a one-off baseline. Jodie, the conversational voice agent
 
 From then on, a daily check-in is just a natural two minute conversation. There are no forms, sliders or multiple-choice questions. When the conversation ends, the platform runs three analyses in parallel:
 
-- **Text analysis (70 per cent of the score)** is the primary, most clinically grounded signal. AWS Bedrock, running Claude Haiku 4.5, reads the conversation transcript and returns a structured result: a mood score, PHQ-2 and GAD-2 indicators, risk markers, sentiment and the salient themes the person raised.
+- **Text analysis (70 per cent of the score)** is the primary, most clinically grounded signal. AWS Bedrock, running Claude 3.7 Sonnet, reads the conversation transcript and returns a structured result: a mood score, PHQ-2 and GAD-2 indicators, risk markers, sentiment and the salient themes the person raised.
 - **Voice analysis (15 per cent)** extracts acoustic features (pitch, speaking rate, jitter, shimmer, pause patterns, energy) from the audio. These prosodic features are research-linked to mood and psychological state.
 - **Facial analysis (15 per cent)** uses AWS Rekognition to read facial affect when the camera is on (smile frequency, eye contact, expression, tension).
 
@@ -50,7 +50,7 @@ The **separation principle**, that institutions receive only anonymised populati
 
 Data in transit is protected with TLS 1.3 from the user to the edge, and TLS to the database behind it. Authentication runs on AWS Cognito with signed JWTs verified cryptographically on every request, multi-factor authentication available, and a separate, time-limited one-time-code flow for Mind Measure superusers. Access is role-based and scoped to a single institution, so an administrator can only ever see their own organisation's data.
 
-API traffic passes through sliding-window rate limiting tuned per endpoint class (stricter on authentication and AI endpoints), on top of the platform's built-in DDoS protection. Every access to sensitive data is written to an immutable, tamper-evident audit log retained for seven years.
+API traffic passes through sliding-window rate limiting tuned per endpoint class (stricter on authentication and AI endpoints), on top of the platform's built-in DDoS protection. Sensitive-data operations are written to a tamper-evident audit log retained for seven years: this covers the generic admin data API (read, insert, update, delete), authentication events, user-management actions, and wellbeing report and AI-insight generation. The log is append-only and entries are not editable through the application.
 
 The platform is built to meet the requirements of UK GDPR, HIPAA and SOC 2 Type II: the technical controls are enterprise-grade, and the remaining work is formal governance documentation and audit evidence for certification. The dedicated **Security Posture** document covers controls in full; the **Privacy and Legal** section covers data subject rights and lawful basis.
 
@@ -98,7 +98,7 @@ Quality is enforced rather than hoped for: 750-plus unit tests run in CI with co
 
 | Signal | Service |
 |---|---|
-| Text (70 per cent) | AWS Bedrock, Claude Haiku 4.5 |
+| Text (70 per cent) | AWS Bedrock, Claude 3.7 Sonnet |
 | Voice (15 per cent) | On-device acoustic feature extraction |
 | Facial (15 per cent) | AWS Rekognition |
 | Conversation | ElevenLabs conversational voice AI (Jodie) |

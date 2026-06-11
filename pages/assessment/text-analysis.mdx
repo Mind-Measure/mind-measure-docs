@@ -2,7 +2,7 @@
 
 ## Overview
 
-Mind Measure uses **AWS Bedrock** with **Claude Haiku 4.5** for conversational text analysis. The text analysis pipeline extracts semantic meaning, emotional indicators, and wellness-related themes from conversation transcripts.
+Mind Measure uses **AWS Bedrock** with **Claude 3.7 Sonnet** for conversational text analysis. The text analysis pipeline extracts semantic meaning, emotional indicators, and wellness-related themes from conversation transcripts.
 
 ## Integration Architecture
 
@@ -13,7 +13,7 @@ Conversation Transcript
  /api/bedrock/analyze-text
  ↓
  AWS Bedrock Client
- (Claude Haiku 4.5)
+ (Claude 3.7 Sonnet)
  ↓
  Structured JSON Response
  ↓
@@ -141,8 +141,9 @@ const bedrockClient = new BedrockRuntimeClient({
  }
 });
 
-// Centralised in api/_lib/bedrock-models.ts (BEDROCK_TEXT_MODEL)
-const MODEL_ID = "eu.anthropic.claude-haiku-4-5-20251001-v1:0";
+// Hardcoded in the mobile check-in text analyzer (bedrockTextAnalyzer.ts),
+// distinct from the admin/back-office Bedrock model in api/_lib/bedrock-models.ts
+const MODEL_ID = "anthropic.claude-3-7-sonnet-20250219-v1:0";
 ```
 
 ### API Handler
@@ -248,7 +249,7 @@ function getEmptyResult(summary: string): TextAnalysisResult {
 
 ## Model Selection Rationale
 
-**Claude Haiku 4.5** was chosen for:
+**Claude 3.7 Sonnet** was chosen for:
 
 | Factor | Rationale |
 |--------|-----------|
@@ -263,5 +264,5 @@ For more nuanced clinical analysis, a Sonnet- or Opus-class model could be consi
 ---
 
 *Last Updated: June 2026*
-*Model: Claude Haiku 4.5 (eu.anthropic.claude-haiku-4-5-20251001-v1:0). Canonical model table: [Platform handbook](/architecture/platform-handbook).*
+*Model: Claude 3.7 Sonnet (anthropic.claude-3-7-sonnet-20250219-v1:0), the check-in text analyzer. The admin/back-office Bedrock model is separate (Claude Haiku 4.5). Canonical model table: [Platform handbook](/architecture/platform-handbook).*
 

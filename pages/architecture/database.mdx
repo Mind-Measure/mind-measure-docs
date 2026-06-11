@@ -225,7 +225,7 @@ CREATE INDEX idx_text_analysis_score ON text_analysis(text_wellness_score);
 CREATE INDEX idx_text_analysis_processed ON text_analysis(processed_at);
 ```
 
-<Callout type="info">**Legacy table.** This per-modality analysis table belongs to the earlier design. Current text analysis output is folded into `fusion_outputs` (and provenance metadata), produced by the Bedrock text pipeline (Claude Haiku 4.5). Access control is API-layer, not RLS.</Callout>
+<Callout type="info">**Legacy table.** This per-modality analysis table belongs to the earlier design. Current text analysis output is folded into `fusion_outputs` (and provenance metadata), produced by the check-in Bedrock text pipeline (Claude 3.7 Sonnet). Access control is API-layer, not RLS.</Callout>
 
 **JSON Schemas**
 

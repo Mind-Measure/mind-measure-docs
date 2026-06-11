@@ -98,27 +98,31 @@ Shared libraries: `mindmeasure-shared-types`, `mindmeasure-shared-services`, `mi
 - **APIs:** Vercel serverless; use `Client` + `await client.end()` in serverless handlers unless the repo standard says otherwise (e.g. Pool in long-lived Next server).
 - **Data:** Aurora Serverless v2 (PostgreSQL), `eu-west-2`.
 - **Auth:** Cognito for end users; superuser flows use email + one-time code patterns documented per app.
-- **AI:** ElevenLabs (Jodie voice agent), AWS Bedrock (Claude Haiku 4.5 for text analysis and server-side generation), AWS Rekognition (visual). Exact models in the canonical table below; deeper detail in [Assessment](/assessment).
+- **AI:** ElevenLabs (Jodie voice agent, Claude Sonnet 4.5), AWS Bedrock (Claude 3.7 Sonnet for check-in text analysis; Claude Haiku 4.5 for back-office generation), AWS Rekognition (visual). Exact models in the canonical table below; deeper detail in [Assessment](/assessment).
 
 ---
 
 ## Production AI models (source of truth)
 
-These are the models actually wired into the live code path, verified against `mind-measure-core/api/_lib/bedrock-models.ts` and `src/services/InstitutionalAgentService.ts`. If any other page disagrees, **this table and the code win**, treat the other page as stale.
+These are the models actually wired into the live code path, verified by tracing the mobile check-in pipeline (`mind-measure-mobile-final/src/services/multimodal/checkin/`) and the back-office Bedrock callers (`mind-measure-core/api/_lib/bedrock-models.ts`, `src/services/InstitutionalAgentService.ts`). If any other page disagrees, **this table and the code win**, treat the other page as stale.
 
-| Job | Where it runs | Model | Identifier |
-|---|---|---|---|
-| Check-in conversation (Jodie, live voice) | ElevenLabs Conversational AI | Claude Sonnet 4.5 | `claude-sonnet-4-5` |
-| Text analysis (70 per cent of the fusion score) | AWS Bedrock, `eu-west-2` | Claude Haiku 4.5 | `eu.anthropic.claude-haiku-4-5-20251001-v1:0` |
-| Server-side generation (AI Insights, weekly reflections, cohort insight reports, report narratives, marketing SEO) | AWS Bedrock, `eu-west-2` | Claude Haiku 4.5 | same identifier as above |
-| Visual analysis (15 per cent) | AWS Rekognition, `eu-west-2` | facial-expression signals | n/a |
-| Audio analysis (15 per cent) | in-pipeline acoustic/prosody features | n/a (not an LLM) | n/a |
+There are four distinct AI touchpoints. They are deliberately different models for different jobs:
+
+| Touchpoint | Job | Where it runs | Model | Identifier |
+|---|---|---|---|---|
+| A. Conversation | Jodie talks to the person (live voice) | ElevenLabs Conversational AI | Claude Sonnet 4.5 | `claude-sonnet-4-5` |
+| B. Check-in text analysis (70 per cent of the fusion score) | Reads the check-in transcript, extracts wellbeing signals | AWS Bedrock, `eu-west-2`, called client-side from the mobile app | Claude 3.7 Sonnet | `anthropic.claude-3-7-sonnet-20250219-v1:0` |
+| C. Visual analysis (15 per cent) | Facial-expression signals | AWS Rekognition, `eu-west-2` | facial-expression signals | n/a |
+| C. Audio analysis (15 per cent) | Acoustic / prosody features | in the mobile pipeline | n/a (not an LLM) | n/a |
+| D. Back-office generation | AI Insights, weekly reflections, cohort insight reports, report narratives, marketing SEO | AWS Bedrock, `eu-west-2`, server-side | Claude Haiku 4.5 | `eu.anthropic.claude-haiku-4-5-20251001-v1:0` |
 
 Notes:
 
-- The **conversation** model (what Jodie uses to talk to the person) and the **scoring** model (what reads the transcript afterwards) are deliberately different. Sonnet 4.5 gives the warmer, more natural conversation; Haiku 4.5 does the cheaper, faster structured analysis behind it.
-- Institutional voice agents were trialled on `gpt-4.1-mini` for cost in June 2026, then reverted fleet-wide to `claude-sonnet-4-5` on quality grounds. `claude-sonnet-4-5` is also the default LLM for newly-created institutional agents.
-- The Bedrock text model is centralised in `api/_lib/bedrock-models.ts` (`BEDROCK_TEXT_MODEL`). History: Claude 3 Haiku, then Claude 3 Sonnet briefly, now Claude Haiku 4.5 (current since May 2026). "Claude 3.7 Sonnet" was never wired into the live path; older docs that name it are stale.
+- The live check-in (mode `checkin23_bounded`) is scored **entirely client-side** in the mobile app: 70 per cent text (Bedrock Claude 3.7 Sonnet via `/api/bedrock/analyze-text`), 15 per cent audio (local acoustic features), 15 per cent visual (Rekognition), fused and renormalised on device. No GPT, no Lambda, no Haiku during a check-in.
+- **A and B are different on purpose.** Sonnet 4.5 gives Jodie the warmer, more natural conversation; the older 3.7 Sonnet is the transcript analyzer that produces the numeric score. The check-in analyzer model id is hardcoded in the mobile analyzer (`bedrockTextAnalyzer.ts`), separate from the back-office `BEDROCK_TEXT_MODEL` constant.
+- **D (back-office) is the only place Haiku 4.5 runs.** That constant is centralised in `api/_lib/bedrock-models.ts` (`BEDROCK_TEXT_MODEL`). History: Claude 3 Haiku, then Claude 3 Sonnet briefly, now Claude Haiku 4.5 (current since May 2026).
+- Institutional voice agents (touchpoint A) were trialled on `gpt-4.1-mini` for cost in June 2026, then reverted fleet-wide to `claude-sonnet-4-5` on quality grounds. `claude-sonnet-4-5` is also the default LLM for newly-created institutional agents.
+- **Legacy / not in the live path:** an older finalisation Lambda (`finalize-session-worker`) that used OpenAI GPT-4o-mini for transcript enrichment is still deployed but has **no caller** in the current mobile app, so OpenAI is **not** a live transcript sub-processor. It is a decommission candidate; do not list it as an active model or sub-processor.
 
 ---
 

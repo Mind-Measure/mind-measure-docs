@@ -38,7 +38,8 @@ All web applications are hosted on Vercel. Mobile apps (Student and Employee) ar
 | Aurora Serverless v2 (PostgreSQL) | Primary database for both products |
 | Cognito | User authentication, JWT issuance |
 | S3 | File storage (brand assets, reports, exports) |
-| Bedrock (Claude 3.7 Sonnet) | Check-in analysis, Weekly Reflection generation |
+| Bedrock (Claude 3.7 Sonnet) | Check-in text analysis (70% of the fusion score) |
+| Bedrock (Claude Haiku 4.5) | Weekly Reflection + back-office generation (AI Insights, cohort insight, report narratives) |
 | Rekognition | Facial expression analysis during check-ins |
 | Lambda (6 functions) | Session processing pipeline, async workers |
 | SQS | Async queue between check-in completion and Lambda workers |
