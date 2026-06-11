@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "generate:intake-docx": "node scripts/generate-intake-docx.mjs"
+    "generate:intake-docx": "node scripts/generate-intake-docx.mjs",
+    "generate:stack-facts": "node scripts/generate-stack-facts.mjs"
   },
   "dependencies": {
     "next": "^14.0.0",

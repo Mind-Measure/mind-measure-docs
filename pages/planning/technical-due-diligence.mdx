@@ -203,7 +203,7 @@ Database credentials for Lambda functions are retrieved from **AWS Secrets Manag
 
 Tests use real assertions with mocked dependencies, cover edge cases, test async flows, and validate error scenarios. Test quality has been verified by reading representative samples.
 
-**Coverage enforcement**: CI pipelines run `vitest --coverage` with enforced thresholds (statements ≥5%, branches ≥3%, functions ≥3%, lines ≥5%). Any PR that reduces coverage below these thresholds is automatically blocked. Coverage is measured across all source files; testing is concentrated on business logic, API middleware, and security services, which achieve 70-100% coverage individually. UI components are covered by Playwright e2e tests rather than unit tests.
+**Coverage enforcement**: CI pipelines run `vitest --coverage` and block any PR that drops below threshold. Two tiers of threshold are enforced. A low global floor (statements ≥5%, branches ≥3%, functions ≥3%, lines ≥5%) acts as a regression tripwire across the frontend `src/**` tree; it is deliberately low because most of `src/` is UI covered by Playwright e2e rather than unit tests, and the serverless `api/` handlers are integration-tested (via the critical-path smoke tests) and excluded from the unit-coverage figure. On top of that, per-module thresholds gate the genuinely business-logic modules at their real coverage: the institutional data-service layer (`src/services/university/**` in core, `src/services/company/**` in pro) is held at roughly 65-90% and cannot regress. UI components are covered by Playwright e2e tests rather than unit tests.
 
 **Configuration**: Vitest with jsdom environment, `@testing-library/jest-dom` matchers, `@vitest/coverage-v8` provider with text, json-summary, and lcov reporters.
 

@@ -1,0 +1,42 @@
+import { Callout } from 'nextra/components'
+
+# Stack facts
+
+<Callout type="warning">
+  **Generated file. Do not edit by hand.** Every value below is pulled live
+  from a named constant in the codebase by `scripts/generate-stack-facts.mjs`.
+  Re-run `npm run generate:stack-facts` after changing a stack constant; the
+  script fails loudly if a constant is renamed or moved, which is the whole
+  point: these are the facts other architecture pages must agree with.
+</Callout>
+
+Last generated: **2026-06-11** (from workspace code constants).
+
+## AI models
+
+| Fact | Value | Source | Notes |
+| --- | --- | --- | --- |
+| Conversation model (Jodie voice agent default) | `claude-sonnet-4-5` | `mind-measure-core/src/services/InstitutionalAgentService.ts` | ElevenLabs agent LLM; default for newly created institutional agents |
+| Check-in text analysis model (70% weight) | `anthropic.claude-3-7-sonnet-20250219-v1:0` | `mind-measure-mobile-final/api/bedrock/analyze-text.ts` | AWS Bedrock, called from the mobile app during a check-in |
+| Back-office text model | `eu.anthropic.claude-haiku-4-5-20251001-v1:0` | `mind-measure-core/api/_lib/bedrock-models.ts` | AI insights, weekly reflections, cohort insight, report narratives, SEO |
+| Back-office text model label (DB metadata) | `claude-haiku-4-5` | `mind-measure-core/api/_lib/bedrock-models.ts` | short label written to cost_tracking / provenance rows |
+| Bedrock region | `eu-west-2` | `mind-measure-core/api/_lib/bedrock-models.ts` |  |
+
+## Scoring
+
+| Fact | Value | Source | Notes |
+| --- | --- | --- | --- |
+| Check-in fusion weights (text / audio / visual) | `0.7 / 0.15 / 0.15` | `mind-measure-mobile-final/src/services/multimodal/checkin/enrichmentService.ts` | all-modalities fusion; scored entirely client-side |
+
+## Privacy
+
+| Fact | Value | Source | Notes |
+| --- | --- | --- | --- |
+| k-anonymity floor (cohort suppression) | `5` | `mind-measure-core/api/_lib/audience.ts` | cohorts smaller than this are reported as belowFloor, never an exact count |
+
+## Database
+
+| Fact | Value | Source | Notes |
+| --- | --- | --- | --- |
+| TLS verification opt-in flag | `DB_SSL_VERIFY` | `mindmeasure-api-lib/src/db-config.ts` | set to 1 per project to enable rejectUnauthorized:true; DB_SSL_INSECURE=1 is the escape hatch |
+| Bundled RDS certificate authority | `eu-west-2` | `mindmeasure-api-lib/src/rds-ca.ts` | Amazon RDS regional root bundle inlined for serverless TLS verification |

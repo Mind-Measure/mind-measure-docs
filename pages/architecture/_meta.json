@@ -1,6 +1,7 @@
 {
   "title": "Architecture",
   "platform-handbook": "Platform handbook",
+  "stack-facts": "Stack facts (generated)",
   "overview": "System Overview",
   "repository-map": "Repository Map",
   "components": "Core Components",
