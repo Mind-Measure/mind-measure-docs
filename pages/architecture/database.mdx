@@ -1,10 +1,19 @@
 # Database Schema Documentation
 
-This document provides comprehensive documentation for the MindMeasure PostgreSQL database schema, including tables, relationships, indexes, and security policies.
+This document describes the MindMeasure PostgreSQL schema: tables, relationships and indexes.
+
+import { Callout } from 'nextra/components'
+
+<Callout type="warning">
+**Platform note (read first).** Mind Measure runs on **AWS Aurora Serverless v2 (PostgreSQL), `eu-west-2`**, having migrated off Supabase (ADR 001). Two consequences for this page:
+
+- **There is no Postgres row-level security (RLS) and no `auth.uid()` on Aurora.** Access control is enforced in the **application/API layer**: every data path goes through authenticated Vercel `/api/*` functions that verify a Cognito JWT (or the superuser one-time-code session) and scope queries by user/institution with parameterised SQL. The `CREATE POLICY ... auth.uid()` and `auth.users` trigger snippets below are **legacy Supabase artefacts kept for historical reference only**; they are not in force.
+- **The live check-in result table is [`fusion_outputs`](#fusion_outputs).** The `assessment_sessions` and per-modality `text_analysis` / `audio_analysis` / `visual_analysis` tables describe an earlier design; `assessment_sessions` in particular stopped being written some months ago. They are retained here as transitional/legacy context, not the current write path.
+</Callout>
 
 ## Schema Overview
 
-The MindMeasure database is designed around a multi-modal assessment system that tracks user wellness through various data points while maintaining strict privacy and security controls.
+The schema is organised around multimodal check-ins: a conversation transcript and per-modality signals are fused into a single wellness score stored in `fusion_outputs`.
 
 ### Core Entities
 
@@ -55,10 +64,10 @@ erDiagram
 
 - user_feature_baselines
  - Columns: id, user_id, feature_name, mean, sd, created_at, updated_at
- - RLS: System ALL; Users can INSERT/UPDATE/SELECT their own
+ - Access: API-layer only, scoped by `user_id` (no RLS on Aurora)
 - user_calibration
  - Columns: id, user_id, modality, a, b, n_points, created_at, updated_at
- - RLS: System ALL; Users can SELECT their own
+ - Access: API-layer only, scoped by `user_id` (no RLS on Aurora)
 
 ## Table Definitions
 
@@ -95,23 +104,7 @@ CREATE TRIGGER update_profiles_updated_at
  EXECUTE FUNCTION update_updated_at_column();
 ```
 
-**RLS Policies**
-```sql
--- Users can view their own profile
-CREATE POLICY "Users can view their own profile"
-ON profiles FOR SELECT
-USING (auth.uid() = user_id);
-
--- Users can create their own profile
-CREATE POLICY "Users can create their own profile"
-ON profiles FOR INSERT
-WITH CHECK (auth.uid() = user_id);
-
--- Users can update their own profile
-CREATE POLICY "Users can update their own profile"
-ON profiles FOR UPDATE
-USING (auth.uid() = user_id);
-```
+**Access control (Aurora):** there is no RLS on this table. The `/api/*` functions that read or write `profiles` verify the caller's Cognito JWT and scope every query to the authenticated `user_id`. (The Supabase `auth.uid()` policies that previously guarded this table no longer exist.)
 
 **JSON Schema - wellness_goals**
 ```typescript
@@ -171,23 +164,7 @@ ADD CONSTRAINT check_assessment_type_valid
 CHECK (assessment_type IN ('full', 'quick', 'voice-only'));
 ```
 
-**RLS Policies**
-```sql
--- Users can view their own sessions
-CREATE POLICY "Users can view their own assessment sessions"
-ON assessment_sessions FOR SELECT
-USING (auth.uid() = user_id);
-
--- Users can create their own sessions
-CREATE POLICY "Users can create their own assessment sessions"
-ON assessment_sessions FOR INSERT
-WITH CHECK (auth.uid() = user_id);
-
--- Users can update their own sessions
-CREATE POLICY "Users can update their own assessment sessions"
-ON assessment_sessions FOR UPDATE
-USING (auth.uid() = user_id);
-```
+<Callout type="info">**Legacy table.** `assessment_sessions` reflects the earlier session-centric design and stopped being actively written some months ago; the live check-in result is `fusion_outputs`. Access control, when this table is read, is enforced in the API layer (Cognito JWT, query scoped by `user_id`), not via RLS.</Callout>
 
 **JSON Schemas**
 
@@ -248,22 +225,7 @@ CREATE INDEX idx_text_analysis_score ON text_analysis(text_wellness_score);
 CREATE INDEX idx_text_analysis_processed ON text_analysis(processed_at);
 ```
 
-**RLS Policies**
-```sql
--- System can create analysis
-CREATE POLICY "System can create text analysis"
-ON text_analysis FOR INSERT
-WITH CHECK (true);
-
--- Users can view their own analysis
-CREATE POLICY "Users can view their own text analysis"
-ON text_analysis FOR SELECT
-USING (EXISTS (
- SELECT 1 FROM assessment_sessions
- WHERE assessment_sessions.id = text_analysis.session_id
- AND assessment_sessions.user_id = auth.uid()
-));
-```
+<Callout type="info">**Legacy table.** This per-modality analysis table belongs to the earlier design. Current text analysis output is folded into `fusion_outputs` (and provenance metadata), produced by the Bedrock text pipeline (Claude Haiku 4.5). Access control is API-layer, not RLS.</Callout>
 
 **JSON Schemas**
 
@@ -409,12 +371,13 @@ CREATE TABLE public.fusion_outputs (
 );
 ```
 
+<Callout type="warning">**`model_version` caveat.** This column currently defaults to a static `'v1.0'` and does not record the actual model used. As the platform has swapped Bedrock text models over time (Claude 3 Haiku, Claude 3 Sonnet, Claude Haiku 4.5) and the conversation LLM (Claude Sonnet 4.5), scores are not reliably comparable across periods unless the real model id and scoring version are stamped per row. Hardening this is tracked as a follow-up (stamp `BEDROCK_TEXT_MODEL_LABEL` + scoring version into every `fusion_outputs` write).</Callout>
+
 **Indexes**
 ```sql
-CREATE INDEX idx_scores_session ON mind_measure_scores(session_id);
-CREATE INDEX idx_scores_combined ON mind_measure_scores(combined_score);
-CREATE INDEX idx_scores_calculated ON mind_measure_scores(calculated_at);
-CREATE INDEX idx_scores_baseline ON mind_measure_scores(is_baseline_session, calculated_at);
+CREATE INDEX idx_fusion_outputs_user ON fusion_outputs(user_id);
+CREATE INDEX idx_fusion_outputs_created ON fusion_outputs(created_at DESC);
+CREATE INDEX idx_fusion_outputs_user_date ON fusion_outputs(user_id, created_at DESC);
 ```
 
 **JSON Schemas**
@@ -546,28 +509,9 @@ END;
 $$ LANGUAGE plpgsql;
 ```
 
-### handle_new_user()
-**Purpose**: Automatically creates a profile for new users
+### Profile creation (no `auth.users` trigger on Aurora)
 
-```sql
-CREATE OR REPLACE FUNCTION public.handle_new_user()
-RETURNS TRIGGER
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path TO ''
-AS $$
-BEGIN
- INSERT INTO public.profiles (user_id, display_name, first_name, last_name)
- VALUES (
- NEW.id,
- COALESCE(NEW.raw_user_meta_data ->> 'display_name', NEW.email),
- NEW.raw_user_meta_data ->> 'first_name',
- NEW.raw_user_meta_data ->> 'last_name'
- );
- RETURN NEW;
-END;
-$$;
-```
+On Supabase, profiles were created by a `handle_new_user()` trigger on `auth.users`. **That mechanism does not exist on Aurora** (there is no `auth.users` table). User identity lives in **AWS Cognito**; a `profiles` row is created/linked by the application during onboarding (via an authenticated `/api/*` call) keyed to the Cognito `sub`. The historical trigger is intentionally omitted here because reproducing it would be misleading.
 
 ---
 
@@ -581,11 +525,8 @@ CREATE TRIGGER update_profiles_updated_at
  FOR EACH ROW
  EXECUTE FUNCTION update_updated_at_column();
 
--- Auto-create profile for new users
-CREATE TRIGGER on_auth_user_created
- AFTER INSERT ON auth.users
- FOR EACH ROW
- EXECUTE FUNCTION handle_new_user();
+-- (No on_auth_user_created trigger on Aurora: there is no auth.users table.
+--  Profile creation is handled by the application against Cognito identities.)
 ```
 
 ### Session Triggers
@@ -601,25 +542,22 @@ CREATE TRIGGER update_sessions_updated_at
 
 ## Security & Privacy
 
-### Row Level Security (RLS)
+### Access control (application layer, not RLS)
 
-All tables have RLS enabled with policies ensuring:
-- Users can only access their own data
-- System functions can create analysis records
-- No direct user access to sensitive analysis data
-- Audit trail for all data access
+Aurora does not use Postgres row-level security here. Instead:
+- Every read/write goes through an authenticated Vercel `/api/*` function that verifies a Cognito JWT (or the superuser one-time-code session).
+- Queries are scoped to the authenticated `user_id` / institution and use parameterised SQL (no string-built queries).
+- There is **no direct database access from clients**; the mobile apps reach data only through these API endpoints.
 
 ### Data Encryption
 
 **At Rest**
-- PostgreSQL transparent data encryption
-- Sensitive JSONB fields use application-level encryption
-- Backup encryption with rotating keys
+- Aurora storage encryption (AWS-managed keys) covers the database at rest, including automated backups and snapshots.
+- Application-level field encryption (`PHIEncryption`) exists in the client codebase but is **not yet enforced server-side** on the API write path; treat server-side field-level PHI encryption as designed, not in force. (Tracked as a security follow-up.)
 
 **In Transit**
-- TLS 1.3 for all database connections
-- Certificate pinning for additional security
-- Connection pooling with encrypted channels
+- TLS for all database connections.
+- **Certificate verification is being hardened.** A number of connection sites currently set `rejectUnauthorized: false` (accept-any-cert), which is *not* certificate pinning. Moving these to verify against the AWS RDS CA bundle is tracked as a security follow-up; until then, do not describe the DB channel as "pinned".
 
 ### Data Retention
 
@@ -655,13 +593,12 @@ $$ LANGUAGE plpgsql;
 
 **Query Optimization**
 ```sql
--- Optimized query for user dashboard
+-- Optimised query for a user's recent check-in scores
 EXPLAIN (ANALYZE, BUFFERS)
-SELECT s.*, ms.combined_score, ms.baseline_deviation
-FROM assessment_sessions s
-LEFT JOIN mind_measure_scores ms ON s.id = ms.session_id
-WHERE s.user_id = $1
-ORDER BY s.created_at DESC
+SELECT session_id, score, score_smoothed, uncertainty, qc_overall, created_at
+FROM fusion_outputs
+WHERE user_id = $1
+ORDER BY created_at DESC
 LIMIT 10;
 ```
 

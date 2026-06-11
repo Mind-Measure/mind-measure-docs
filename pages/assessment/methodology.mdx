@@ -4,8 +4,8 @@
 
 Mind Measure employs a **multimodal assessment approach** combining audio, visual, and text analysis to generate wellness scores. The platform supports two assessment types:
 
-- **[Baseline Assessments](./assessment-engine/baseline-assessment)**: Establish personal baseline using validated clinical questions (PHQ-2, GAD-2, Mood Scale)
-- **[Daily Check-ins](./assessment-engine/checkin-assessment)**: Brief conversational wellness monitoring
+- **[Baseline Assessments](./baseline-assessment)**: Establish personal baseline using validated clinical questions (PHQ-2, GAD-2, Mood Scale)
+- **[Daily Check-ins](./checkin-assessment)**: Brief conversational wellness monitoring
 
 ## Current Implementation
 
@@ -14,19 +14,19 @@ For detailed technical documentation, see the **[Assessment Engine](./assessment
 | Component | Documentation |
 |-----------|---------------|
 | System Architecture | [Assessment Engine Overview](./assessment-engine) |
-| Baseline Pipeline | [Baseline Assessment](./assessment-engine/baseline-assessment) |
-| Check-in Pipeline | [Daily Check-ins](./assessment-engine/checkin-assessment) |
-| Audio Analysis | [Audio Features](./assessment-engine/audio-features) |
-| Visual Analysis | [Visual Features](./assessment-engine/visual-features) |
-| Text Analysis | [Text Analysis (Bedrock)](./assessment-engine/text-analysis) |
-| Score Fusion | [Scoring Algorithm](./assessment-engine/scoring-algorithm) |
+| Baseline Pipeline | [Baseline Assessment](./baseline-assessment) |
+| Check-in Pipeline | [Daily Check-ins](./checkin-assessment) |
+| Audio Analysis | [Audio Features](./audio-features) |
+| Visual Analysis | [Visual Features](./visual-features) |
+| Text Analysis | [Text Analysis (Bedrock)](./text-analysis) |
+| Score Fusion | [Scoring Algorithm](./scoring-algorithm) |
 
 ## Key Technologies
 
 | Component | Technology |
 |-----------|------------|
 | Conversational AI | ElevenLabs React SDK |
-| Text Analysis | AWS Bedrock (Claude 3.7 Sonnet) |
+| Text Analysis | AWS Bedrock (Claude Haiku 4.5) |
 | Visual Analysis | AWS Rekognition |
 | Audio Analysis | Client-side Web Audio API |
 | Database | Aurora PostgreSQL |

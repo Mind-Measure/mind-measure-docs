@@ -2,9 +2,20 @@
 
 # Mind Measure Backend Architecture
 
+import { Callout } from 'nextra/components'
+
+<Callout type="warning">
+**How this page relates to [Architecture](/architecture/architecture) (read first).** The two pages describe **two layers of one system**, not a contradiction:
+
+- The **backend front door is Vercel serverless functions** (`api/*` in each repo). These handle the large majority of backend logic: auth, database access, reports, AI insights, weekly reflections, cohort/insight endpoints, hubs and CMS. This is what the Architecture page means by "Vercel serverless functions".
+- A **specialised subset of the multimodal pipeline** (per-modality audio/visual/text analysis and the fusion scoring) runs in **AWS Lambda behind API Gateway**, invoked from the Vercel layer (for example `api/lambda/finalize-session.ts` proxies to the Lambda `prod` stage). This page documents that **Lambda engine layer**.
+
+So: Vercel = the API surface and most logic; Lambda = the heavy analysis/scoring engine it calls. Some code samples below are illustrative and date from the AWS migration; the canonical model/stack facts live in the [Platform handbook](/architecture/platform-handbook).
+</Callout>
+
 ## Overview
 
-The Mind Measure backend is built on AWS serverless architecture, providing scalable, secure, and cost-effective services for mental health data processing and management.
+The Mind Measure backend combines Vercel serverless functions (the API surface) with an AWS Lambda analysis/scoring engine behind API Gateway, on AWS managed services for mental-health data processing.
 
 ## Architecture Components
 
@@ -238,7 +249,7 @@ const analysisResults = await Promise.allSettled([
 
 #### Endpoint Structure
 ```yaml
-Base URL: https://4xg1jsjh7k.execute-api.eu-west-2.amazonaws.com/dev
+Base URL: https://<api-gateway-id>.execute-api.eu-west-2.amazonaws.com/<stage>
 
 Endpoints:
  POST /analyze-audio:
@@ -794,22 +805,23 @@ resources:
 
 #### Environment Variables
 ```bash
-# Production Environment Variables
-RDS_HOST=mindmeasure-aurora.cluster-cz8c8wq4k3ak.eu-west-2.rds.amazonaws.com
+# Production Environment Variables (values are placeholders; real values live in
+# Vercel/Lambda env + AWS Secrets Manager, never in docs or git)
+RDS_HOST=<aurora-cluster-endpoint>
 RDS_PORT=5432
-RDS_DATABASE=mindmeasure
-RDS_USERNAME=mindmeasure_admin
-RDS_PASSWORD=<secure-password>
+RDS_DATABASE=<database-name>
+RDS_USERNAME=<db-user>
+RDS_PASSWORD=<secret-password>
 
-COGNITO_USER_POOL_ID=eu-west-2_ClAG4fQXR
-COGNITO_CLIENT_ID=7vu03ppv6alkpphs1ksopll8us
+COGNITO_USER_POOL_ID=<cognito-user-pool-id>
+COGNITO_CLIENT_ID=<cognito-client-id>
 
 AWS_REGION=eu-west-2
 AWS_ACCESS_KEY_ID=<access-key>
 AWS_SECRET_ACCESS_KEY=<secret-key>
 
 # Lambda-specific
-LAMBDA_BASE_URL=https://4xg1jsjh7k.execute-api.eu-west-2.amazonaws.com/dev
+LAMBDA_BASE_URL=https://<api-gateway-id>.execute-api.eu-west-2.amazonaws.com/<stage>
 ```
 
 ### Testing & Quality Assurance
@@ -896,6 +908,5 @@ describe('Assessment Pipeline Integration', () => {
 
 This backend architecture provides a robust, scalable, and maintainable foundation for the Mind Measure platform, leveraging AWS serverless technologies for optimal performance and cost-effectiveness.
 
-**Last Updated**: October 28, 2025
-**Version**: 2.0 (AWS Migration)
-**Next Review**: November 28, 2025
+**Last Updated**: June 2026
+**Version**: 2.1 (Vercel + Lambda layering clarified; infra values redacted)

@@ -39,7 +39,7 @@ The core intellectual property — a multimodal fusion engine combining text, au
 | Aurora Serverless v2 | Primary database (PostgreSQL) | eu-west-2 (London) | AES-256 encryption, KMS-managed keys, annual key rotation |
 | Cognito | User authentication | eu-west-2 | RS256 JWT, MFA support (TOTP + SMS) |
 | S3 | Encrypted file storage | eu-west-2 | Server-side encryption |
-| Bedrock | AI transcript analysis (Claude 3.7 Sonnet) | eu-west-2 | Risk detection, sentiment, PHQ-2/GAD-2 scoring |
+| Bedrock | AI transcript analysis (Claude Haiku 4.5) | eu-west-2 | Risk detection, sentiment, PHQ-2/GAD-2 scoring |
 | Rekognition | Facial emotion detection | eu-west-2 | Real-time frame analysis during check-ins |
 | Lambda | Session processing pipeline | eu-west-2 | VPC-isolated, IAM least privilege |
 | SES | Transactional email | eu-west-2 | STARTTLS (TLS 1.2) |
@@ -64,7 +64,7 @@ All frontend applications use the same stack: **React 19 + TypeScript + Vite**. 
 
 The platform's core differentiator is a **3-modality wellbeing assessment engine** that analyses check-in conversations across:
 
-- **Text analysis (70% weight)**: AWS Bedrock (Claude 3.7 Sonnet) extracts mood scores, PHQ-2/GAD-2 clinical indicators, risk markers, sentiment, key themes, positives, and negatives from conversation transcripts.
+- **Text analysis (70% weight)**: AWS Bedrock (Claude Haiku 4.5) extracts mood scores, PHQ-2/GAD-2 clinical indicators, risk markers, sentiment, key themes, positives, and negatives from conversation transcripts.
 - **Audio analysis (15% weight)**: Client-side Web Audio API extracts speech patterns — energy levels, speaking rate, vocal stress indicators, silence ratios.
 - **Visual analysis (15% weight)**: AWS Rekognition analyses facial expressions during check-ins — emotion classification, engagement indicators.
 
@@ -377,6 +377,8 @@ Application-level rate limiting is implemented via sliding-window middleware (`a
 Rate-limited responses return standard headers (`RateLimit-Limit`, `RateLimit-Remaining`, `Retry-After`) per IETF draft-ietf-httpapi-ratelimit-headers, with HTTP 429 and a `RATE_LIMIT_EXCEEDED` error code.
 
 This sits on top of Vercel's built-in DDoS protection and database-level rate limiting for specific operations.
+
+**Implementation caveat (stated for accuracy):** the middleware counter is an in-memory `Map` scoped to each warm serverless instance, with no shared store (no Redis). On Vercel this means the per-tier limits are enforced per warm instance rather than globally, and counters reset on cold start. It is an effective MVP control against casual abuse from a single source, and Vercel's edge DDoS protection covers volumetric attacks, but it is not a globally-coordinated limiter. A shared-store upgrade (Redis or Vercel KV) is the path to strict global enforcement if/when load justifies it.
 
 ### 10.3 Error Tracking
 

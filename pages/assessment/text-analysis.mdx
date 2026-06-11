@@ -2,7 +2,7 @@
 
 ## Overview
 
-Mind Measure uses **AWS Bedrock** with **Claude 3.7 Sonnet** for conversational text analysis. The text analysis pipeline extracts semantic meaning, emotional indicators, and wellness-related themes from conversation transcripts.
+Mind Measure uses **AWS Bedrock** with **Claude Haiku 4.5** for conversational text analysis. The text analysis pipeline extracts semantic meaning, emotional indicators, and wellness-related themes from conversation transcripts.
 
 ## Integration Architecture
 
@@ -13,7 +13,7 @@ Conversation Transcript
  /api/bedrock/analyze-text
  ↓
  AWS Bedrock Client
- (Claude 3.7 Sonnet)
+ (Claude Haiku 4.5)
  ↓
  Structured JSON Response
  ↓
@@ -141,7 +141,8 @@ const bedrockClient = new BedrockRuntimeClient({
  }
 });
 
-const MODEL_ID = "anthropic.claude-3-7-sonnet-20250219-v1:0";
+// Centralised in api/_lib/bedrock-models.ts (BEDROCK_TEXT_MODEL)
+const MODEL_ID = "eu.anthropic.claude-haiku-4-5-20251001-v1:0";
 ```
 
 ### API Handler
@@ -247,7 +248,7 @@ function getEmptyResult(summary: string): TextAnalysisResult {
 
 ## Model Selection Rationale
 
-**Claude 3.7 Sonnet** was chosen for:
+**Claude Haiku 4.5** was chosen for:
 
 | Factor | Rationale |
 |--------|-----------|
@@ -257,10 +258,10 @@ function getEmptyResult(summary: string): TextAnalysisResult {
 | **JSON reliability** | Good at following output schemas |
 | **Safety** | Built-in content filtering |
 
-For more nuanced clinical analysis, Claude 3 Sonnet or Opus could be considered.
+For more nuanced clinical analysis, a Sonnet- or Opus-class model could be considered, at higher cost and latency.
 
 ---
 
-*Last Updated: December 2025*
-*Model: Claude 3.7 Sonnet (anthropic.claude-3-7-sonnet-20250219-v1:0)*
+*Last Updated: June 2026*
+*Model: Claude Haiku 4.5 (eu.anthropic.claude-haiku-4-5-20251001-v1:0). Canonical model table: [Platform handbook](/architecture/platform-handbook).*
 

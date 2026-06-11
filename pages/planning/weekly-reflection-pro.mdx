@@ -14,7 +14,7 @@ This is a **new employee-facing surface for Pro**. It is not the same as the exi
 
 The University pipeline transfers almost directly:
 
-- Generation: Bedrock (Claude 3.7 Sonnet) → `content_json` → email + HMAC-signed web view.
+- Generation: Bedrock (Claude Haiku 4.5) → `content_json` → email + HMAC-signed web view.
 - Schema: `weekly_reflection_sends` (now live in the uni `mindmeasure` DB; verified June 2026) ports to the Pro `mindmeasurepro` DB keyed by `company_id`.
 - Cron pattern: Pro-core already runs Vercel crons (`vercel.json`); add a Sunday slot.
 - SES: already wired in Pro-core.

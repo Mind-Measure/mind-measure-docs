@@ -22,7 +22,7 @@ Every user begins with a one-off baseline. Jodie, the conversational voice agent
 
 From then on, a daily check-in is just a natural two minute conversation. There are no forms, sliders or multiple-choice questions. When the conversation ends, the platform runs three analyses in parallel:
 
-- **Text analysis (70 per cent of the score)** is the primary, most clinically grounded signal. AWS Bedrock, running Claude 3.7 Sonnet, reads the conversation transcript and returns a structured result: a mood score, PHQ-2 and GAD-2 indicators, risk markers, sentiment and the salient themes the person raised.
+- **Text analysis (70 per cent of the score)** is the primary, most clinically grounded signal. AWS Bedrock, running Claude Haiku 4.5, reads the conversation transcript and returns a structured result: a mood score, PHQ-2 and GAD-2 indicators, risk markers, sentiment and the salient themes the person raised.
 - **Voice analysis (15 per cent)** extracts acoustic features (pitch, speaking rate, jitter, shimmer, pause patterns, energy) from the audio. These prosodic features are research-linked to mood and psychological state.
 - **Facial analysis (15 per cent)** uses AWS Rekognition to read facial affect when the camera is on (smile frequency, eye contact, expression, tension).
 
@@ -88,7 +88,7 @@ Quality is enforced rather than hoped for: 750-plus unit tests run in CI with co
 
 | Layer | Technology |
 |---|---|
-| API | Vercel serverless functions |
+| API | Vercel serverless functions (front door, most logic); AWS Lambda + API Gateway for the multimodal analysis/scoring engine. See [Backend](/architecture/backend) |
 | Orchestration | State machine for parallel check-in analysis |
 | Database | Amazon Aurora Serverless v2 (PostgreSQL) |
 | Storage | Amazon S3 (encrypted, signed-URL access) |
@@ -98,7 +98,7 @@ Quality is enforced rather than hoped for: 750-plus unit tests run in CI with co
 
 | Signal | Service |
 |---|---|
-| Text (70 per cent) | AWS Bedrock, Claude 3.7 Sonnet |
+| Text (70 per cent) | AWS Bedrock, Claude Haiku 4.5 |
 | Voice (15 per cent) | On-device acoustic feature extraction |
 | Facial (15 per cent) | AWS Rekognition |
 | Conversation | ElevenLabs conversational voice AI (Jodie) |

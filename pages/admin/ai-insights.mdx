@@ -4,7 +4,7 @@ Comprehensive guide to the AI-powered insights feature that transforms student w
 
 ## Overview
 
-The AI Insights feature uses AWS Bedrock (Claude 3 Sonnet) to analyze aggregated student wellbeing data and generate comprehensive institutional reports. Instead of manually interpreting keywords and themes, university staff receive AI-generated analysis with specific patterns, affected cohorts, and actionable recommendations.
+The AI Insights feature uses AWS Bedrock (Claude Haiku 4.5) to analyze aggregated student wellbeing data and generate comprehensive institutional reports. Instead of manually interpreting keywords and themes, university staff receive AI-generated analysis with specific patterns, affected cohorts, and actionable recommendations.
 
 **Deployment Date**: December 2025
 **Status**: Production
@@ -160,7 +160,7 @@ Response format:
 
 ### AWS Bedrock Integration
 
-**Model**: Claude 3 Sonnet (anthropic.claude-3-sonnet-20240229-v1:0)
+**Model**: Claude Haiku 4.5 (eu.anthropic.claude-haiku-4-5-20251001-v1:0)
 **Region**: eu-west-2
 **Authentication**: Server-side credentials (stored in Vercel environment variables)
 
@@ -175,7 +175,7 @@ Key configuration:
 2. **Service Layer** → `AIInsightsService.ts` prepares request
 3. **API Endpoint** → `/api/ai-insights/generate` receives request
 4. **Prompt Construction** → Builds specialized prompt with context
-5. **Bedrock Call** → Invokes Claude 3 Sonnet via AWS SDK
+5. **Bedrock Call** → Invokes Claude Haiku 4.5 via AWS SDK
 6. **Response Parsing** → Validates and structures JSON response
 7. **Frontend Display** → `AIInsightsModal.tsx` renders results
 
@@ -184,13 +184,13 @@ Key configuration:
 #### Data Protection
 - Aggregated data only (no individual transcripts sent to AI)
 - Keywords and counts, not personally identifiable information
-- Server-side processing (credentials never exposed to browser)
+- Server-side processing only (credentials never exposed to the browser; mobile apps reach analysis through authenticated `/api/*` endpoints, not direct Bedrock calls)
 - HTTPS encryption for all API calls
 
 #### AWS Credentials
 - Stored as encrypted Vercel environment variables
-- Shared with mobile app's Bedrock integration
-- Scoped to `bedrock:InvokeModel` permission only
+- Supplied by the scoped `mindmeasure-app-prod` service user (least-privilege); server-side only, never embedded in a client bundle
+- Bedrock access limited to `bedrock:InvokeModel`
 - Automatically trimmed to prevent formatting errors
 
 #### Compliance
@@ -203,26 +203,23 @@ Key configuration:
 
 ### Pricing Structure
 
-**Claude 3 Sonnet Pricing**:
-- Input: $3.00 per million tokens
-- Output: $15.00 per million tokens
+**Claude Haiku 4.5 pricing** (current model, the low-cost Bedrock tier, materially below Sonnet/Opus rates):
 
 **Typical Analysis**:
 - Input tokens: ~800 (keywords, context, system prompt)
 - Output tokens: ~1200 (insights JSON)
-- Cost per analysis: ~$0.02
+- Cost per analysis: well under one penny
 
 **Monthly Estimates**:
-- Daily analysis: ~£12/month per university
-- On-demand only: ~£0.60/month (1-2 analyses per week)
+- Daily analysis: a few pounds per university per month
+- On-demand only (1-2 analyses per week): pennies per university per month
 
-### Cost Optimization Options
+### Cost Optimisation Options
 
-#### Option 1: Claude 3.7 Sonnet (current)
-- Model: `anthropic.claude-3-7-sonnet-20250219-v1:0`
-- Cost: ~$0.0003 per analysis
-- Monthly: ~£0.20 per university
-- Trade-off: Slightly less sophisticated analysis
+#### Option 1: Stay on Claude Haiku 4.5 (current)
+- Model: `eu.anthropic.claude-haiku-4-5-20251001-v1:0` (centralised in `api/_lib/bedrock-models.ts`)
+- The low-cost, low-latency tier; sufficient for structured aggregate analysis
+- A Sonnet-class model would improve nuance at materially higher cost
 
 #### Option 2: Scheduled Analysis
 - Generate insights once daily at 2am
@@ -244,7 +241,7 @@ Key configuration:
 **Solution**:
 1. Verify credentials in Vercel environment variables
 2. Check for extra spaces or newlines
-3. Ensure credentials match mobile app's working credentials
+3. Ensure the server-side service-user credentials are current
 4. Redeploy after updating
 
 ### "r.insights.map is not a function"
@@ -351,11 +348,11 @@ AI Insights work best when combined with:
 
 ## Related Documentation
 
-- [Admin UI Guide](/core-platform/admin-ui) - Complete admin dashboard guide
-- [Architecture](/architecture-infrastructure/architecture) - System architecture overview
-- [Text Analysis](/assessment-engine/text-analysis) - How mobile app uses Bedrock
-- [Database Schema](/architecture-infrastructure/database) - Data structure documentation
-- [AWS Authentication](/architecture-infrastructure/authentication-aws) - AWS setup guide
+- [Admin UI Guide](/admin/admin-ui) - Complete admin dashboard guide
+- [Architecture](/architecture/architecture) - System architecture overview
+- [Text Analysis](/assessment/text-analysis) - How the platform uses Bedrock for text analysis
+- [Database Schema](/architecture/database) - Data structure documentation
+- [Platform handbook](/architecture/platform-handbook) - Canonical stack and model reference
 
 ## API Reference
 
