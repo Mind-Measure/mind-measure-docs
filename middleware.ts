@@ -17,10 +17,6 @@ const SUPERUSER_SECRET = process.env.SUPERUSER_JWT_SECRET || process.env.JWT_SEC
 const AUD = 'docs';
 const REQUIRED_PERMISSION = 'docs_platform_access';
 
-// ---- Legacy static-token flow (removed once admin/ops switch to mm_sso) ----
-const LEGACY_COOKIE = 'mm_auth';
-const LEGACY_TOKEN = process.env.MM_INTERNAL_TOKEN || '';
-
 function base64UrlToBytes(str: string): Uint8Array {
   const padded = str.replace(/-/g, '+').replace(/_/g, '/');
   const binary = atob(padded);
@@ -143,22 +139,7 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // 2. LEGACY static mm_token flow (retired once all callers use mm_sso).
-  const tokenParam = url.searchParams.get('mm_token');
-  if (tokenParam && LEGACY_TOKEN && tokenParam === LEGACY_TOKEN) {
-    url.searchParams.delete('mm_token');
-    const res = NextResponse.redirect(url);
-    res.cookies.set(LEGACY_COOKIE, LEGACY_TOKEN, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'lax',
-      maxAge: COOKIE_MAX_AGE,
-      path: '/',
-    });
-    return res;
-  }
-
-  // 3. Durable session cookie — signature verified (no longer decode-only).
+  // 2. Durable session cookie — signature verified (no longer decode-only).
   const sessionCookie = req.cookies.get(SESSION_COOKIE);
   if (sessionCookie) {
     const payload = await verifySession(sessionCookie.value);
@@ -167,13 +148,7 @@ export async function middleware(req: NextRequest) {
     }
   }
 
-  // 4. LEGACY static mm_auth cookie (retired with the mm_token flow).
-  const legacyCookie = req.cookies.get(LEGACY_COOKIE);
-  if (legacyCookie && LEGACY_TOKEN && legacyCookie.value === LEGACY_TOKEN) {
-    return NextResponse.next();
-  }
-
-  // 5. Not authenticated — redirect to login.
+  // 3. Not authenticated — redirect to login.
   const loginUrl = req.nextUrl.clone();
   loginUrl.pathname = '/login';
   loginUrl.searchParams.set('from', req.nextUrl.pathname);

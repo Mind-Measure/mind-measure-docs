@@ -102,6 +102,8 @@ These must be set in both `mind-measure-core` and `mind-measure-pro-core` Vercel
 
 ## Auth-Protected Sites
 
-The documentation site and marketing CMS are protected by Next.js middleware. Direct URL access is blocked. Access is granted via token passthrough from the superuser portals.
+The documentation site and marketing CMS are protected by Next.js middleware. Direct URL access is blocked. Access is granted via a short-lived, signed SSO handoff from the superuser portals (and Ops).
 
-The token is set as `VITE_MM_INTERNAL_TOKEN` (client-side, in admin dashboards) and `MM_INTERNAL_TOKEN` (server-side, in docs and marketing CMS). All four must have the same value.
+When a superuser opens docs or the marketing CMS, the admin backend mints a 60-second, audience-scoped JWT (signed with `PLATFORM_HANDOFF_SECRET`) and hands it over in the URL as `?mm_sso=`. The target site's Edge middleware verifies the signature, audience and expiry, then exchanges it for a normal `mm_session` cookie. No long-lived shared secret is ever exposed to the browser.
+
+`PLATFORM_HANDOFF_SECRET` must be set to the same value on the admin portals (core, pro-core), Ops, and the two protected sites (docs, marketing CMS). The old static `MM_INTERNAL_TOKEN` / `VITE_MM_INTERNAL_TOKEN` passthrough has been retired.

@@ -309,8 +309,12 @@ VITE_BACKEND_PROVIDER=aurora-serverless
 VITE_AWS_REGION=eu-west-2
 VITE_AWS_COGNITO_USER_POOL_ID=...
 VITE_AWS_COGNITO_CLIENT_ID=...
-VITE_MM_INTERNAL_TOKEN=...  # For docs/marketing auth passthrough
+PLATFORM_HANDOFF_SECRET=...  # Server-side: signs the docs/CMS SSO handoff (never VITE_-prefixed)
 ```
+
+The docs / marketing CMS handoff no longer uses a client-side token. The
+backend mints a short-lived signed JWT (`/api/auth/platform-handoff`); the
+secret stays server-side, so nothing sensitive is inlined into the client bundle.
 
 Server-side env vars (no VITE_ prefix) are used in `/api/` functions:
 
@@ -326,7 +330,7 @@ RDS_PASSWORD=...
 
 ```bash
 DATABASE_URL=...  # Prisma connection string
-MM_INTERNAL_TOKEN=...  # Middleware auth token
+PLATFORM_HANDOFF_SECRET=...  # Verifies the signed SSO handoff (?mm_sso=) in middleware
 AWS_ACCESS_KEY_ID=...
 AWS_SECRET_ACCESS_KEY=...
 AWS_REGION=eu-west-2
