@@ -82,18 +82,19 @@ See [Stack facts](/architecture/stack-facts) for the exact model identifiers.
   scores entirely client-side via Bedrock and Rekognition). Verified, then removed:
   the dead Lambdas, the SQS queue, the `/mindmeasure/openai/api_key` SSM parameter
   and the in-repo source were all deleted (the API key itself should be revoked in
-  the OpenAI dashboard to finish). There is no remaining OpenAI code path. (Any
-  "Whisper / transcription" sub-processor row in the legal privacy policies is stale
-  and should be reconciled against this page.)
+  the OpenAI dashboard to finish). There is no remaining OpenAI code path. (The
+  stale "Whisper / transcription" sub-processor row in the legal privacy policies
+  was reconciled to ElevenLabs on 13/06/2026 to match this page.)
 - **Supabase.** Fully migrated to AWS Aurora Serverless v2. No Supabase service
   processes Mind Measure data.
 
 ## Reconciliation notes (for the next docs pass)
 
 - Legal privacy policies (`/legal/privacy-policy`, `/legal/privacy-policy-pro`)
-  §15 list a **"Whisper / transcription"** sub-processor row that is not in the
-  live path; that row should be removed or corrected to ElevenLabs. This is a
-  published-policy change, so it is left for a deliberate legal review rather
-  than edited here.
+  previously listed a **"Whisper / transcription"** sub-processor row that was not
+  in the live path. Corrected to ElevenLabs on 13/06/2026 across all four copies
+  (the two published marketing-site policy components and the two docs mirrors),
+  in both the §3.2 audio-data prose and the §15 sub-processor table. A legal
+  proofread of the published wording is still advisable before the next release.
 - The older `Privacy & Legal` page (`/security/privacy`) previously named
   "Supabase, OpenAI" as the service providers; corrected to match this page.

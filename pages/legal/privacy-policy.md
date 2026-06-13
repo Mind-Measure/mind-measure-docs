@@ -52,7 +52,7 @@ Mind Measure collects only the data necessary to provide the Services. We do not
 ### 3.2 Audio data
 
 - The app captures audio during voluntary check-ins, with your explicit consent
-- Audio is used for two purposes: (a) transcription into text using Whisper, and (b) extraction of acoustic features such as pitch, speech rate, pause duration, and vocal intensity
+- Audio is used for two purposes: (a) transcription into text, performed by ElevenLabs as part of the live check-in conversation, and (b) extraction of acoustic features such as pitch, speech rate, pause duration, and vocal intensity
 - Audio files are deleted within 24 hours of processing. No raw audio is stored long-term
 
 ### 3.3 Visual data
@@ -238,7 +238,7 @@ Mind Measure uses a limited number of trusted third-party services to operate th
 | Identity management | Amazon Cognito | User authentication and account security | Email, authentication tokens |
 | API routing | Amazon API Gateway | Secure request handling | API requests (no personal content) |
 | Text analysis | AWS Bedrock (Claude) | Linguistic feature extraction from check-in text | Transcribed text |
-| Transcription | Whisper | Speech-to-text conversion | Audio (deleted within 24 hours) |
+| Transcription | ElevenLabs | Speech-to-text conversion during the live check-in | Audio (deleted within 24 hours) |
 | Visual analysis | AWS Rekognition | Facial landmark and expression extraction | Sampled frames (deleted immediately) |
 | Conversational interface | ElevenLabs | Voice prompts during check-ins | No personal data retained |
 | Data storage | Aurora Serverless v2 | Encrypted structured data storage | All derived features and scores |
