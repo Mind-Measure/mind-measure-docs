@@ -2,7 +2,7 @@
 
 ## Overview
 
-Mind Measure uses **AWS Bedrock** with **Claude 3.7 Sonnet** for conversational text analysis. The text analysis pipeline extracts semantic meaning, emotional indicators, and wellness-related themes from conversation transcripts.
+Mind Measure uses **AWS Bedrock** with **Claude Sonnet 4.5** for conversational text analysis. The text analysis pipeline extracts semantic meaning, emotional indicators, and wellness-related themes from conversation transcripts.
 
 ## Integration Architecture
 
@@ -13,7 +13,7 @@ Conversation Transcript
  /api/bedrock/analyze-text
  ↓
  AWS Bedrock Client
- (Claude 3.7 Sonnet)
+ (Claude Sonnet 4.5)
  ↓
  Structured JSON Response
  ↓
@@ -141,9 +141,10 @@ const bedrockClient = new BedrockRuntimeClient({
  }
 });
 
-// Hardcoded in the mobile check-in text analyzer (bedrockTextAnalyzer.ts),
-// distinct from the admin/back-office Bedrock model in api/_lib/bedrock-models.ts
-const MODEL_ID = "anthropic.claude-3-7-sonnet-20250219-v1:0";
+// Hardcoded in each mobile app's api/bedrock/analyze-text.ts, distinct from
+// the admin/back-office Bedrock model in api/_lib/bedrock-models.ts.
+// eu-west-2 reaches Sonnet 4.5 only via the EU cross-region inference profile.
+const MODEL_ID = "eu.anthropic.claude-sonnet-4-5-20250929-v1:0";
 ```
 
 ### API Handler
@@ -249,20 +250,20 @@ function getEmptyResult(summary: string): TextAnalysisResult {
 
 ## Model Selection Rationale
 
-**Claude 3.7 Sonnet** was chosen for:
+**Claude Sonnet 4.5** is used for:
 
 | Factor | Rationale |
 |--------|-----------|
-| **Speed** | Fastest Claude model (~2s response) |
-| **Cost** | Lowest cost per token |
-| **Quality** | Sufficient for structured extraction |
-| **JSON reliability** | Good at following output schemas |
+| **Quality** | Reliable mood-score extraction and nuanced reading of what the person actually said |
+| **Cost** | Same per-token price as its predecessor (Claude 3.7 Sonnet): $3 per 1M input tokens, $15 per 1M output tokens |
+| **Consistency** | Same model family as Jodie's conversation model |
+| **JSON reliability** | Follows the output schema, though it wraps the JSON in markdown code fences, which the endpoint strips before parsing |
 | **Safety** | Built-in content filtering |
 
-For more nuanced clinical analysis, a Sonnet- or Opus-class model could be considered, at higher cost and latency.
+Claude 3.7 Sonnet was the analyzer until 15 October 2026, when AWS marked it Legacy and withdrew access. Because the endpoint fails soft, an unavailable model shows up as fallback values (mood 5/10, "Text analysis was not available") rather than an error, so check Bedrock model access first if those appear.
 
 ---
 
-*Last Updated: June 2026*
-*Model: Claude 3.7 Sonnet (anthropic.claude-3-7-sonnet-20250219-v1:0), the check-in text analyzer. The admin/back-office Bedrock model is separate (Claude Haiku 4.5). Canonical model table: [Platform handbook](/architecture/platform-handbook).*
+*Last Updated: October 2026*
+*Model: Claude Sonnet 4.5 (eu.anthropic.claude-sonnet-4-5-20250929-v1:0), the check-in text analyzer. The admin/back-office Bedrock model is separate (Claude Haiku 4.5). Canonical model table: [Platform handbook](/architecture/platform-handbook).*
 

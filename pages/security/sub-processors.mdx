@@ -37,7 +37,7 @@ result is persisted. The raw modalities touch sub-processors as follows:
    done inside ElevenLabs as part of the conversation; there is no separate
    transcription sub-processor.
 2. **Transcript text -> AWS Bedrock.** The device sends the transcript to
-   Bedrock (Claude 3.7 Sonnet) via `/api/bedrock/analyze-text` for the 70%
+   Bedrock (Claude Sonnet 4.5) via `/api/bedrock/analyze-text` for the 70%
    text analysis. Bedrock returns linguistic features/scores; it does not
    retain inputs or train on them.
 3. **Sampled video frames -> AWS Rekognition.** Frames captured during the

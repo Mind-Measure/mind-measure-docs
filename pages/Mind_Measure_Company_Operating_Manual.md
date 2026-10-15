@@ -89,7 +89,7 @@ The **Weekly Reflection** is a personalised editorial email sent each Sunday (08
 
 The Mind Measure Score is produced by a multimodal fusion engine that analyses three signals from each check-in conversation.
 
-**Linguistic analysis (70 per cent weight)** is the primary signal. AWS Bedrock, running Claude 3.7 Sonnet, processes the conversation transcript and returns a structured output including a mood score, PHQ-2 and GAD-2 clinical indicators, risk markers, sentiment polarity, and key themes (positives, negatives, salient topics). The text analysis is the most clinically grounded signal because it captures what the person actually said.
+**Linguistic analysis (70 per cent weight)** is the primary signal. AWS Bedrock, running Claude Sonnet 4.5, processes the conversation transcript and returns a structured output including a mood score, PHQ-2 and GAD-2 clinical indicators, risk markers, sentiment polarity, and key themes (positives, negatives, salient topics). The text analysis is the most clinically grounded signal because it captures what the person actually said.
 
 **Vocal analysis (15 per cent weight)** extracts speech features using the Web Audio API, processing in real time on the user's device. The features analysed include mean pitch, speaking rate, jitter (pitch variation), shimmer (amplitude variation), pause patterns, energy level, and vocal quality. Research links these acoustic characteristics to emotional state and psychological wellbeing; lower pitch variability, slower speaking rate, and higher jitter and shimmer are associated with depression and low mood.
 

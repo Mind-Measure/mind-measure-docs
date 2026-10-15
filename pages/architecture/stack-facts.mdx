@@ -10,14 +10,14 @@ import { Callout } from 'nextra/components'
   point: these are the facts other architecture pages must agree with.
 </Callout>
 
-Last generated: **2026-06-11** (from workspace code constants).
+Last generated: **2026-10-15** (from workspace code constants).
 
 ## AI models
 
 | Fact | Value | Source | Notes |
 | --- | --- | --- | --- |
 | Conversation model (Jodie voice agent default) | `claude-sonnet-4-5` | `mind-measure-core/src/services/InstitutionalAgentService.ts` | ElevenLabs agent LLM; default for newly created institutional agents |
-| Check-in text analysis model (70% weight) | `anthropic.claude-3-7-sonnet-20250219-v1:0` | `mind-measure-mobile-final/api/bedrock/analyze-text.ts` | AWS Bedrock, called from the mobile app during a check-in |
+| Check-in text analysis model (70% weight) | `eu.anthropic.claude-sonnet-4-5-20250929-v1:0` | `mind-measure-mobile-final/api/bedrock/analyze-text.ts` | AWS Bedrock, called from the mobile app during a check-in |
 | Back-office text model | `eu.anthropic.claude-haiku-4-5-20251001-v1:0` | `mind-measure-core/api/_lib/bedrock-models.ts` | AI insights, weekly reflections, cohort insight, report narratives, SEO |
 | Back-office text model label (DB metadata) | `claude-haiku-4-5` | `mind-measure-core/api/_lib/bedrock-models.ts` | short label written to cost_tracking / provenance rows |
 | Bedrock region | `eu-west-2` | `mind-measure-core/api/_lib/bedrock-models.ts` |  |

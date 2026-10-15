@@ -67,7 +67,7 @@ Mental health monitoring and support platform with two product lines: **Universi
 - **Database**: PostgreSQL on AWS Aurora Serverless v2
 - **Auth**: AWS Cognito (students/employees), custom JWT (superuser 6-digit code)
 - **Storage**: AWS S3 (`mindmeasure-user-content-459338929203`, region `eu-west-2`)
-- **AI/ML**: ElevenLabs (Jodie voice agent), AWS Bedrock (Claude 3.7 Sonnet for text analysis), AWS Rekognition (visual analysis)
+- **AI/ML**: ElevenLabs (Jodie voice agent), AWS Bedrock (Claude Sonnet 4.5 for text analysis), AWS Rekognition (visual analysis)
 - **Email**: AWS SES from `noreply@mindmeasure.co.uk`
 - **Monitoring**: Sentry
 

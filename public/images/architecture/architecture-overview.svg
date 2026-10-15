@@ -77,7 +77,7 @@
     <text x="480" y="770" font-size="24" font-weight="bold" fill="#ffffff" text-anchor="middle">70%</text>
     <text x="306" y="792" font-size="29" font-weight="bold" fill="#1a1a1a" text-anchor="middle">Text analysis</text>
     <text x="306" y="828" font-size="21" fill="#5C7070" text-anchor="middle">AWS Bedrock</text>
-    <text x="306" y="856" font-size="21" fill="#5C7070" text-anchor="middle">Claude 3.7 Sonnet</text>
+    <text x="306" y="856" font-size="21" fill="#5C7070" text-anchor="middle">Claude Sonnet 4.5</text>
   </g>
   <g>
     <rect x="578" y="726" width="484" height="150" rx="12" fill="#ffffff" stroke="#204C4C" stroke-width="1.5"/>
